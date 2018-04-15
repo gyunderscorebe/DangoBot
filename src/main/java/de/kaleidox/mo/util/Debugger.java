@@ -40,7 +40,7 @@ public class Debugger {
         try {
             return put(t.toString());
         } catch (NullPointerException e) {
-            return put("Tried to output NULL with cause: "+e.getCause());
+            return put("Tried to output NULL with cause: " + e.getCause());
         }
     }
 

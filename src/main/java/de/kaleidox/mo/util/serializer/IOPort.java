@@ -14,7 +14,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class IOPort<T, X> {
     private static Debugger log = new Debugger(IOPort.class.getName());
@@ -28,12 +27,8 @@ public class IOPort<T, X> {
         this.writer = writer;
     }
 
-    public File getFile() {
-        return file;
-    }
-
     public static IOPort<ConcurrentHashMap<String, String>, Map<String, String>> mapPort(File file) {
-        log.put("EXISTS? "+file.exists());
+        log.put("EXISTS? " + file.exists());
         return new IOPort<>(
                 file,
                 () -> {
@@ -64,6 +59,10 @@ public class IOPort<T, X> {
                     }
                 }
         );
+    }
+
+    public File getFile() {
+        return file;
     }
 
     public T read() {

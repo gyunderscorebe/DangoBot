@@ -13,7 +13,7 @@ configure(applicationDistribution) {
     }
 }
 
-applicationDefaultJvmArgs = ["-Dlogback.configurationFile=conf/logback.xml","-XX:-OmitStackTraceInFastThrow"]
+applicationDefaultJvmArgs = ["-Dlogback.configurationFile=conf/logback.xml", "-XX:-OmitStackTraceInFastThrow"]
 
 sourceCompatibility = 1.8
 

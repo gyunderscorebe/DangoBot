@@ -1,10 +1,8 @@
 package de.kaleidox.mo;
 
 import de.kaleidox.mo.bot.Auth;
-import de.kaleidox.mo.bot.Command;
 import de.kaleidox.mo.bot.StatusScroll;
 import de.kaleidox.mo.util.Mapper;
-import de.kaleidox.mo.util.SuccessState;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.Emoji;
@@ -18,9 +16,6 @@ public class Main {
     public final static HashMap<String, ConcurrentHashMap<String, String>> MAPS = new HashMap<>();
     public static DiscordApi API;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<String, String> channelEmojiMap = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<String, String> channelConfigMap = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<String, String> activeChannelsMap = new ConcurrentHashMap<>();
 
     public static ConcurrentHashMap<Long, Auth> authInstancesMap = new ConcurrentHashMap<>();
 

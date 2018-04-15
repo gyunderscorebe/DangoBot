@@ -7,7 +7,6 @@ import de.kaleidox.mo.util.SuccessState;
 import de.kaleidox.mo.util.Utils;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.PrivateChannel;
-import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
