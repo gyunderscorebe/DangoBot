@@ -1,4 +1,4 @@
-package de.kaleidox.mo.util.serializer;
+package de.kaleidox.dangobot.util.serializer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,13 +49,13 @@ public class SelectedPropertiesMapper extends PropertiesMapper {
             return get(selected, index);
     }
 
-    public String softGet(int index, String valueIfAbsent) {
+    public String softGet(int index, Object valueIfAbsent) {
         if (selected.isEmpty())
             throw new NullPointerException("No Key selected.");
         else return softGet(selected, index, valueIfAbsent);
     }
 
-    public String set(int index, String value) {
+    public String set(int index, Object value) {
         if (selected.isEmpty())
             throw new NullPointerException("No Key selected.");
         else

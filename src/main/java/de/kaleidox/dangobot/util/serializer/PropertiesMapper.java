@@ -1,8 +1,8 @@
-package de.kaleidox.mo.util.serializer;
+package de.kaleidox.dangobot.util.serializer;
 
-import de.kaleidox.mo.util.CustomCollectors;
-import de.kaleidox.mo.util.Debugger;
-import de.kaleidox.mo.util.Mapper;
+import de.kaleidox.dangobot.util.CustomCollectors;
+import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.dangobot.util.Mapper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,8 +50,6 @@ public class PropertiesMapper {
                     )
             );
         }
-
-        log.put(values);
     }
 
     public SelectedPropertiesMapper select(Object key) {
@@ -82,12 +80,12 @@ public class PropertiesMapper {
         return values.get(fromKey.toString()).get(index);
     }
 
-    public String softGet(Object key, int index, String valueIfAbsent) {
+    public String softGet(Object key, int index, Object valueIfAbsent) {
         if (values.get(key.toString()).size() >= index)
             return values.get(key.toString()).get(index);
         else {
-            values.get(key.toString()).add(index, valueIfAbsent);
-            return valueIfAbsent;
+            values.get(key.toString()).add(index, valueIfAbsent.toString());
+            return valueIfAbsent.toString();
         }
     }
 

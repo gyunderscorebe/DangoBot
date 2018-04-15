@@ -1,6 +1,6 @@
-package de.kaleidox.mo.util.serializer;
+package de.kaleidox.dangobot.util.serializer;
 
-import de.kaleidox.mo.util.Debugger;
+import de.kaleidox.dangobot.util.Debugger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +28,6 @@ public class IOPort<T, X> {
     }
 
     public static IOPort<ConcurrentHashMap<String, String>, Map<String, String>> mapPort(File file) {
-        log.put("EXISTS? " + file.exists());
         return new IOPort<>(
                 file,
                 () -> {

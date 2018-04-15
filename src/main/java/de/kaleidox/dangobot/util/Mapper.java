@@ -1,6 +1,6 @@
-package de.kaleidox.mo.util;
+package de.kaleidox.dangobot.util;
 
-import de.kaleidox.mo.Main;
+import de.kaleidox.dangobot.Main;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,9 +16,6 @@ public class Mapper {
         log.put("Packing Maps...", false);
 
         Main.MAPS.put("authUsers", Main.authUsersMap);
-        Main.MAPS.put("channelConfig", Main.channelConfigMap);
-        Main.MAPS.put("channelEmoji", Main.channelEmojiMap);
-        Main.MAPS.put("activeChannels", Main.activeChannelsMap);
 
         log.put("Maps packed.", false);
     }

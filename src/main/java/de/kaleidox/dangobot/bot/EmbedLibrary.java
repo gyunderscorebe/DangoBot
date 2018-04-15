@@ -1,6 +1,6 @@
-package de.kaleidox.mo.bot;
+package de.kaleidox.dangobot.bot;
 
-import de.kaleidox.mo.Nub;
+import de.kaleidox.dangobot.Nub;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 public enum EmbedLibrary {

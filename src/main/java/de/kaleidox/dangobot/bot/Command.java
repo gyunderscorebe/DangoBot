@@ -1,10 +1,11 @@
-package de.kaleidox.mo.bot;
+package de.kaleidox.dangobot.bot;
 
-import de.kaleidox.mo.Main;
-import de.kaleidox.mo.Nub;
-import de.kaleidox.mo.util.Debugger;
-import de.kaleidox.mo.util.SuccessState;
-import de.kaleidox.mo.util.Utils;
+import de.kaleidox.dangobot.Main;
+import de.kaleidox.dangobot.Nub;
+import de.kaleidox.dangobot.bot.specific.DangoProcessor;
+import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.dangobot.util.SuccessState;
+import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.PrivateChannel;
 import org.javacord.api.entity.message.Message;
@@ -70,8 +71,7 @@ public enum Command {
         if (msg.getAuthor().isBotOwner()) {
             chl.asServerTextChannel().ifPresent(stc -> {
                 if (usr.isBotOwner()) {
-                    // todo Testcommand HERE
-                    Main.channelEmojiMap.forEach((key, value) -> stc.sendMessage(key + " ||| " + value));
+                    DangoProcessor.softGet(srv);
                 }
             });
         }
@@ -141,7 +141,7 @@ public enum Command {
             }
         } else if (msg.getChannel() instanceof PrivateChannel) {
             msg.getPrivateChannel().get().sendMessage(Nub.getBasicEmbed()
-                    .addField("I'm Sorry!", "I'm sorry, but I currently can't work from DMs! Please try messaging me with `mo help` on a Server!")
+                    .addField("I'm Sorry!", "I'm sorry, but I currently can't work from DMs! Please try messaging me with `dangobot help` on a Server!")
             );
         }
 

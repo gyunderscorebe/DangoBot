@@ -1,4 +1,4 @@
-package de.kaleidox.mo.bot;
+package de.kaleidox.dangobot.bot;
 
 
 import org.javacord.api.DiscordApi;

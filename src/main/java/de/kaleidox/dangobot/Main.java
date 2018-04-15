@@ -1,12 +1,18 @@
-package de.kaleidox.mo;
+package de.kaleidox.dangobot;
 
-import de.kaleidox.mo.bot.Auth;
-import de.kaleidox.mo.bot.StatusScroll;
-import de.kaleidox.mo.util.Mapper;
+import de.kaleidox.dangobot.bot.Auth;
+import de.kaleidox.dangobot.bot.Command;
+import de.kaleidox.dangobot.bot.StatusScroll;
+import de.kaleidox.dangobot.bot.specific.DangoProcessor;
+import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.dangobot.util.Mapper;
+import de.kaleidox.dangobot.util.SuccessState;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +23,10 @@ public class Main {
     public static DiscordApi API;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
 
+    private static Debugger log = new Debugger(Main.class.getName());
+
     public static ConcurrentHashMap<Long, Auth> authInstancesMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, DangoProcessor> dangoProcessorMap = new ConcurrentHashMap<>();
 
     public static void main(String args[]) {
         Mapper.packMaps();
@@ -31,9 +40,24 @@ public class Main {
                     StatusScroll status = new StatusScroll(api);
 
                     //// Cosmetics
+                    api.updateUsername("Dango Bot");
 
                     //// Actual Bot Part
                     api.addMessageCreateListener(event -> {
+                        Message msg = event.getMessage();
+                        User usr = msg.getUserAuthor().get();
+
+                        if (msg.isPrivate()) {
+                            // private stuff
+                        } else {
+                            Server srv = event.getServer().get();
+
+                            SuccessState commandState = Command.processCommand(msg);
+
+                            if (commandState == SuccessState.NOT_RUN) {
+                                DangoProcessor.softGet(srv).increment(usr);
+                            } else commandState.evaluateForMessage(msg);
+                        }
                     });
 
                     //// Shenanigans

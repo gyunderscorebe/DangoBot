@@ -1,6 +1,6 @@
-package de.kaleidox.mo;
+package de.kaleidox.dangobot;
 
-import de.kaleidox.mo.util.Utils;
+import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import java.awt.*;

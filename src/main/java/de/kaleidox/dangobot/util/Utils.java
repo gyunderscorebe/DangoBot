@@ -1,4 +1,4 @@
-package de.kaleidox.mo.util;
+package de.kaleidox.dangobot.util;
 
 
 import org.javacord.api.entity.emoji.Emoji;

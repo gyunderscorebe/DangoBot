@@ -1,4 +1,4 @@
-package de.kaleidox.mo.discord.ui;
+package de.kaleidox.dangobot.discord.ui;
 
 import com.vdurmont.emoji.EmojiParser;
 import org.javacord.api.entity.message.Message;

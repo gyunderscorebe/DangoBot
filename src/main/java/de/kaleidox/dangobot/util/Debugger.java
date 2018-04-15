@@ -1,6 +1,6 @@
-package de.kaleidox.mo.util;
+package de.kaleidox.dangobot.util;
 
-import de.kaleidox.mo.Nub;
+import de.kaleidox.dangobot.Nub;
 import org.javacord.api.entity.message.Message;
 
 import java.sql.Timestamp;

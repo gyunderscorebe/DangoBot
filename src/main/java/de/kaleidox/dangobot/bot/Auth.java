@@ -1,11 +1,11 @@
-package de.kaleidox.mo.bot;
+package de.kaleidox.dangobot.bot;
 
-import de.kaleidox.mo.Main;
-import de.kaleidox.mo.Nub;
-import de.kaleidox.mo.util.Debugger;
-import de.kaleidox.mo.util.Mapper;
-import de.kaleidox.mo.util.SuccessState;
-import de.kaleidox.mo.util.serializer.PropertiesMapper;
+import de.kaleidox.dangobot.Main;
+import de.kaleidox.dangobot.Nub;
+import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.dangobot.util.Mapper;
+import de.kaleidox.dangobot.util.SuccessState;
+import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.PermissionType;
