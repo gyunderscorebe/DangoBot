@@ -15,6 +15,7 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -22,18 +23,16 @@ public class Main {
     public final static HashMap<String, ConcurrentHashMap<String, String>> MAPS = new HashMap<>();
     public static DiscordApi API;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
-
-    private static Debugger log = new Debugger(Main.class.getName());
-
     public static ConcurrentHashMap<Long, Auth> authInstancesMap = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Long, DangoProcessor> dangoProcessorMap = new ConcurrentHashMap<>();
+    private static Debugger log = new Debugger(Main.class.getName());
 
     public static void main(String args[]) {
         Mapper.packMaps();
         Mapper.loadMaps();
 
         new DiscordApiBuilder()
-                .setToken(Nub.BOT_TOKEN)
+                .setToken(DangoBot.BOT_TOKEN)
                 .login()
                 .thenAccept(api -> {
                     Main.API = api;
@@ -48,15 +47,34 @@ public class Main {
                         User usr = msg.getUserAuthor().get();
 
                         if (msg.isPrivate()) {
-                            // private stuff
+                            Optional<Command> commandOpt = Command.getCommand(msg);
+
+                            commandOpt.ifPresent(command -> {
+                                if (command.canRunPrivately) {
+                                    command.runPrivate(msg);
+                                } else {
+                                    msg.getPrivateChannel().get().sendMessage(DangoBot.getBasicEmbed()
+                                            .addField("I'm Sorry!", "I'm sorry, but you can't run this command from private chat.")
+                                    );
+                                }
+                            });
                         } else {
                             Server srv = event.getServer().get();
 
                             SuccessState commandState = Command.processCommand(msg);
 
-                            if (commandState == SuccessState.NOT_RUN) {
-                                DangoProcessor.softGet(srv).increment(usr);
-                            } else commandState.evaluateForMessage(msg);
+                            switch (commandState) {
+                                case NOT_RUN:
+                                    DangoProcessor.softGet(srv).increment(msg);
+                                    break;
+                                case SUCCESSFUL:
+                                    //break;
+                                case ERRORED:
+                                case UNAUTHORIZED:
+                                case UNSUCCESSFUL:
+                                    commandState.evaluateForMessage(msg);
+                                    break;
+                            }
                         }
                     });
 

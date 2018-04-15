@@ -110,9 +110,6 @@ public class SelectedPropertiesMapper extends PropertiesMapper {
     }
 
     public void write() {
-        if (selected == null)
-            throw new NullPointerException("No Key selected.");
-        else
-            write(selected);
+        super.write();
     }
 }

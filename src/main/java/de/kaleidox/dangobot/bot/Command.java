@@ -1,13 +1,15 @@
 package de.kaleidox.dangobot.bot;
 
+import de.kaleidox.dangobot.DangoBot;
 import de.kaleidox.dangobot.Main;
-import de.kaleidox.dangobot.Nub;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.channel.Channel;
-import org.javacord.api.entity.channel.PrivateChannel;
+import org.javacord.api.entity.channel.ServerTextChannel;
+import org.javacord.api.entity.emoji.CustomEmoji;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
@@ -22,48 +24,95 @@ import java.util.function.Consumer;
 
 public enum Command {
     // Enum Stuff
-    HELP("help", false, new int[]{0, 0}, msg -> {
+    HELP("help", true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.HELP.getEmbed()));
     }),
-    INFO("info", false, new int[]{0, 0}, msg -> {
+    INFO("info", true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.INFO.getEmbed()));
     }),
-    BUGREPORT("bug", false, new int[]{0, 0}, msg -> {
+    BUGREPORT("bug", true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.BUGREPORT.getEmbed()));
     }),
-    INVITE("invitelink", false, new int[]{0, 0}, msg -> {
+    INVITE("invitelink", true, false, new int[]{0, 0}, msg -> {
         msg.getUserAuthor().ifPresent(user -> {
             user.openPrivateChannel().thenAccept(privateChannel -> {
                 privateChannel.sendMessage(EmbedLibrary.INVITE.getEmbed());
             });
         });
     }),
-    DISCORD("discordlink", false, new int[]{0, 0}, msg -> {
+    DISCORD("discordlink", true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.DISCORD.getEmbed()));
     }),
-    DONATE("donate", false, new int[]{0, 0}, msg -> {
+    DONATE("donate", true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.DONATE.getEmbed()));
     }),
 
-    ADD_AUTH("auth", true, new int[]{1, 1}, msg -> {
+    COUNT_INTERACTION("count", false, true, new int[]{0, 1}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+
+        List<String> param = extractParam(msg);
+
+        if (param.size() == 0) {
+            stc.sendMessage(DangoBot.getBasicEmbed()
+                    .addField("Current Counter:", String.valueOf(dangoProcessor.getCounterMax()))
+            );
+        } else if (param.size() == 1) {
+            if (param.get(0).matches("[0-9]*")) {
+                long val = Long.parseLong(param.get(0));
+                if (val <= Integer.MAX_VALUE && val >= 25) {
+                    dangoProcessor.setCounterMax(Integer.parseInt(param.get(0)));
+                } else if (val < 25) {
+                    SuccessState.ERRORED.withMessage("The given Number is too small, needs to be greater than 25.").evaluateForMessage(msg);
+                } else {
+                    SuccessState.ERRORED.withMessage("The given Number is too big.").evaluateForMessage(msg);
+                }
+            }
+        }
+    }),
+    EMOJI_INTERACTION("emoji", false, true, new int[]{0, 1}, msg -> {
+        Server srv = msg.getServer().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+
+        List<String> param = extractParam(msg);
+
+        if (param.size() == 0) {
+            stc.sendMessage(DangoBot.getBasicEmbed()
+                    .addField("Current Emoji:", dangoProcessor.getEmoji().getPrintable())
+            );
+        } else if (param.size() == 1) {
+            List<CustomEmoji> customEmojis = msg.getCustomEmojis();
+
+            if (customEmojis.size() == 1) {
+                dangoProcessor.setEmoji(new Emoji(customEmojis.get(0)));
+            } else if (customEmojis.size() == 0) {
+                dangoProcessor.setEmoji(new Emoji(param.get(0)));
+            }
+        }
+    }),
+
+    ADD_AUTH("auth", false, true, new int[]{1, 1}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
 
         Auth.softGet(srv).addAuth(usr).thenAccept(state -> Utils.evaluateState(msg, state));
     }),
-    REMOVE_AUTH("unauth", true, new int[]{1, 1}, msg -> {
+    REMOVE_AUTH("unauth", false, true, new int[]{1, 1}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
 
         Auth.softGet(srv).removeAuth(usr).thenAccept(state -> Utils.evaluateState(msg, state));
     }),
-    AUTHS("auths", true, new int[]{0, 0}, msg -> {
+    AUTHS("auths", false, true, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
 
         msg.getServerTextChannel().ifPresent(chl -> Auth.softGet(srv).sendEmbed(chl).thenAccept(state -> Utils.evaluateState(msg, state)));
     }),
 
-    TESTCOMMAND("testcommand", false, new int[]{0, 0}, msg -> {
+    TESTCOMMAND("testcommand", false, true, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
         Channel chl = msg.getChannel();
         User usr = msg.getUserAuthor().get();
@@ -78,22 +127,24 @@ public enum Command {
     });
 
     public static final HashSet<String> KEYWORDS = new HashSet<String>() {{
-        add("nub");
-        add("nubbot");
-        add("<@392065608398798851>");
+        add("dango");
+        add("dangobot");
+        add(Main.API.getYourself().getMentionTag());
     }};
     public static final HashSet<Command> VALUES = new HashSet<Command>() {{
         this.addAll(Arrays.asList(Command.values()));
     }};
     private static Debugger log = new Debugger(Command.class.getName());
+    public boolean canRunPrivately;
     private String keyword;
     private boolean requiresAuth;
     // Command Usage Stuff
     private int[] parameterRange;
     private Consumer<Message> consumer;
 
-    Command(String keyword, boolean requiresAuth, int[] parameterRange, Consumer<Message> consumer) {
+    Command(String keyword, boolean canRunPrivately, boolean requiresAuth, int[] parameterRange, Consumer<Message> consumer) {
         this.keyword = keyword;
+        this.canRunPrivately = canRunPrivately;
         this.requiresAuth = requiresAuth;
         this.parameterRange = parameterRange;
         this.consumer = consumer;
@@ -139,10 +190,6 @@ public enum Command {
                     }
                 }
             }
-        } else if (msg.getChannel() instanceof PrivateChannel) {
-            msg.getPrivateChannel().get().sendMessage(Nub.getBasicEmbed()
-                    .addField("I'm Sorry!", "I'm sorry, but I currently can't work from DMs! Please try messaging me with `dangobot help` on a Server!")
-            );
         }
 
         return val;
@@ -175,5 +222,9 @@ public enum Command {
         }
 
         return param;
+    }
+
+    public void runPrivate(Message msg) {
+        this.consumer.accept(msg);
     }
 }

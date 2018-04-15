@@ -15,13 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class IOPort<T, X> {
+public class IOPort<R, W> {
     private static Debugger log = new Debugger(IOPort.class.getName());
     private File file;
-    private Supplier<T> reader;
-    private Consumer<X> writer;
+    private Supplier<R> reader;
+    private Consumer<W> writer;
 
-    public IOPort(File file, Supplier<T> reader, Consumer<X> writer) {
+    public IOPort(File file, Supplier<R> reader, Consumer<W> writer) {
         this.file = file;
         this.reader = reader;
         this.writer = writer;
@@ -64,7 +64,7 @@ public class IOPort<T, X> {
         return file;
     }
 
-    public T read() {
+    public R read() {
         return reader.get();
     }
 
@@ -76,7 +76,7 @@ public class IOPort<T, X> {
                         .split(splitWith.toString())));
     }
 
-    public void write(X item) {
+    public void write(W item) {
         writer.accept(item);
     }
 }

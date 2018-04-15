@@ -81,9 +81,15 @@ public class PropertiesMapper {
     }
 
     public String softGet(Object key, int index, Object valueIfAbsent) {
-        if (values.get(key.toString()).size() >= index)
-            return values.get(key.toString()).get(index);
-        else {
+        if (values.containsKey(key.toString())) {
+            if (values.get(key.toString()).size() > index)
+                return values.get(key.toString()).get(index);
+            else {
+                values.get(key.toString()).add(index, valueIfAbsent.toString());
+                return valueIfAbsent.toString();
+            }
+        } else {
+            values.put(key.toString(), new ArrayList<>());
             values.get(key.toString()).add(index, valueIfAbsent.toString());
             return valueIfAbsent.toString();
         }
@@ -137,8 +143,15 @@ public class PropertiesMapper {
 
     // Write to Map, end part
 
-    public void write(String key) {
-        // TODO some weird saving bug
+    public void write() {
+        values.forEach((key, value) ->
+                map.put(key, value
+                        .stream()
+                        .collect(CustomCollectors.toConcatenatedString(splitWith)
+                        )
+                )
+        );
+
         ioPort.write(map);
     }
 }

@@ -1,16 +1,15 @@
 package de.kaleidox.dangobot.bot.specific;
 
-import com.vdurmont.emoji.EmojiParser;
 import de.kaleidox.dangobot.Main;
-import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
-import org.javacord.core.entity.emoji.UnicodeEmojiImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,17 +20,16 @@ public class DangoProcessor {
     private int counter, counterMax;
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
-    private Emoji emoji = new de.kaleidox.dangobot.util.Emoji("\uD83C\uDF61");
+    private Emoji emoji;
 
     private DangoProcessor(Server server) {
         this.myServer = server;
-        this.counterMax = 100;
 
         serverId = myServer.getId();
 
         this.settings = new SelectedPropertiesMapper(new File("props/dangoProcessorSettings.properties"), ';', serverId);
 
-        File ranks = new File("props/rankings/"+serverId+".properties");
+        File ranks = new File("props/rankings/" + serverId + ".properties");
 
         if (!ranks.exists()) {
             try {
@@ -42,7 +40,8 @@ public class DangoProcessor {
         }
         this.rankings = new PropertiesMapper(ranks, ';');
 
-        counterMax = Integer.parseInt(settings.softGet(0, 0));
+        this.counterMax = Integer.parseInt(settings.softGet(0, 100));
+        this.emoji = new Emoji(settings.softGet(1, "\uD83C\uDF61"));
 
         Mapper.safePut(Main.dangoProcessorMap, serverId, this);
     }
@@ -57,26 +56,46 @@ public class DangoProcessor {
         return (Main.dangoProcessorMap.containsKey(server.getId()) ? Main.dangoProcessorMap.get(server.getId()) : Main.dangoProcessorMap.put(server.getId(), new DangoProcessor(server)));
     }
 
+    public void increment(Message msg) {
+        MessageAuthor userAuthor = msg.getAuthor();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+
+        if (userAuthor.isUser() && !userAuthor.isYourself()) {
+            User usr = userAuthor.asUser().get();
+
+            counter++;
+
+            if (counter >= counterMax) {
+                giveDango(usr, stc);
+            }
+        }
+    }
+
+    public void giveDango(User user, ServerTextChannel inChannel) {
+        rankings.set(user.getId(), 0, rankings.softGet(user.getId(), 0, 0) + 1);
+        rankings.write();
+
+        inChannel.sendMessage(emoji.getPrintable()).thenRun(() -> counter = 0);
+    }
+
+    public int getCounterMax() {
+        return counterMax;
+    }
+
     public void setCounterMax(int counterMax) {
         this.counterMax = counterMax;
         settings.set(0, counter);
+        settings.write();
+    }
+
+    public Emoji getEmoji() {
+        return emoji;
     }
 
     public void setEmoji(Emoji emoji) {
         this.emoji = emoji;
-    }
 
-    public void increment(User user, ServerTextChannel inChannel) {
-        counter++;
-
-        if (counter >= counterMax) {
-            giveDango(user);
-
-            inChannel.sendMessage(emoji.getPrintable());
-        }
-    }
-
-    public void giveDango(User user) {
-
+        settings.set(1, emoji.getPrintable());
+        settings.write();
     }
 }

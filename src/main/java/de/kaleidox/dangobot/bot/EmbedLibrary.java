@@ -1,25 +1,25 @@
 package de.kaleidox.dangobot.bot;
 
-import de.kaleidox.dangobot.Nub;
+import de.kaleidox.dangobot.DangoBot;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 public enum EmbedLibrary {
-    HELP(Nub.getBasicEmbed()
+    HELP(DangoBot.getBasicEmbed()
             .addField("Report Bugs over here:", "https://github.com/Kaleidox00/Steve/issues")
     ),
-    INFO(Nub.getBasicEmbed()
+    INFO(DangoBot.getBasicEmbed()
             .addField("Report Bugs over here:", "https://github.com/Kaleidox00/Steve/issues")
     ),
-    BUGREPORT(Nub.getBasicEmbed()
+    BUGREPORT(DangoBot.getBasicEmbed()
             .addField("Report Bugs over here:", "https://github.com/Kaleidox00/Steve/issues")
     ),
-    INVITE(Nub.getBasicEmbed()
-            .addField("The Invitation for the Poker Bot:", Nub.INVITE_LINK)
+    INVITE(DangoBot.getBasicEmbed()
+            .addField("The Invitation for the Poker Bot:", DangoBot.INVITE_LINK)
     ),
-    DISCORD(Nub.getBasicEmbed()
-            .addField("Our Discord Server:", Nub.DISCORD_LINK)
+    DISCORD(DangoBot.getBasicEmbed()
+            .addField("Our Discord Server:", DangoBot.DISCORD_LINK)
     ),
-    DONATE(Nub.getBasicEmbed()
+    DONATE(DangoBot.getBasicEmbed()
             .addField("You can Donate for this Bot here, if you want:", "http://donate.kaleidox.de/")
     );
 

@@ -1,7 +1,7 @@
 package de.kaleidox.dangobot.bot;
 
+import de.kaleidox.dangobot.DangoBot;
 import de.kaleidox.dangobot.Main;
-import de.kaleidox.dangobot.Nub;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.SuccessState;
@@ -71,7 +71,7 @@ public class Auth {
     public CompletableFuture<SuccessState> addAuth(User user) {
         CompletableFuture<SuccessState> val = new CompletableFuture<>();
 
-        auths.add(serverId.toString(), user.getIdAsString()).write(serverId.toString());
+        auths.add(serverId.toString(), user.getIdAsString()).write();
         val.complete(SuccessState.SUCCESSFUL);
 
         log.put("Added Auth for " + myServer.getName());
@@ -83,7 +83,7 @@ public class Auth {
         CompletableFuture<SuccessState> val = new CompletableFuture<>();
 
         if (auths.containsValue(myServer.getIdAsString(), user.getIdAsString())) {
-            auths.removeValue(serverId.toString(), user.getIdAsString()).write(serverId.toString());
+            auths.removeValue(serverId.toString(), user.getIdAsString()).write();
             val.complete(SuccessState.SUCCESSFUL);
 
             log.put("Removed Auth for " + myServer.getName());
@@ -96,10 +96,10 @@ public class Auth {
 
     public CompletableFuture<SuccessState> sendEmbed(ServerTextChannel chl) {
         CompletableFuture<SuccessState> val = new CompletableFuture<>();
-        EmbedBuilder eb = Nub.getBasicEmbed();
+        EmbedBuilder eb = DangoBot.getBasicEmbed();
         User usr;
 
-        eb.setTitle(Nub.BOT_NAME + " - **Authed Users on __" + myServer.getName() + "__:**");
+        eb.setTitle(DangoBot.BOT_NAME + " - **Authed Users on __" + myServer.getName() + "__:**");
         eb.setDescription("_Administrators and User with Permission \"Manage Server\" are Authed by Default._");
 
         if (auths.containsKey(myServer.getIdAsString())) {

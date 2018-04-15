@@ -1,6 +1,6 @@
 package de.kaleidox.dangobot.util;
 
-import de.kaleidox.dangobot.Nub;
+import de.kaleidox.dangobot.DangoBot;
 import de.kaleidox.dangobot.discord.ui.Respond;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -42,8 +42,8 @@ public enum SuccessState {
                 Respond.addInfoReaction(msg, "❌", false, this.getMessageEmbed());
                 break;
             case UNAUTHORIZED:
-                Respond.addInfoReaction(msg, "⛔", false, this.hasMessage ? this.getMessageEmbed() : Nub.getBasicEmbed()
-                        .addField("You do not have access to that Command.", "If you think this is a mistake, please Contact an Administrator.")
+                Respond.addInfoReaction(msg, "⛔", false, this.hasMessage ? this.getMessageEmbed() : DangoBot.getBasicEmbed()
+                        .addField("You do not have access to that Command.", "If you think this is a mistake, please contact an Administrator.")
                 );
                 break;
             default:
@@ -70,7 +70,7 @@ public enum SuccessState {
     }
 
     public EmbedBuilder getMessageEmbed() {
-        return getMessageEmbed(Nub.getBasicEmbed());
+        return getMessageEmbed(DangoBot.getBasicEmbed());
     }
 
     public EmbedBuilder getMessageEmbed(EmbedBuilder baseEmbed) {

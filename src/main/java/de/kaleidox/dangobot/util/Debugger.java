@@ -1,6 +1,6 @@
 package de.kaleidox.dangobot.util;
 
-import de.kaleidox.dangobot.Nub;
+import de.kaleidox.dangobot.DangoBot;
 import org.javacord.api.entity.message.Message;
 
 import java.sql.Timestamp;
@@ -46,7 +46,7 @@ public class Debugger {
 
     public Boolean put(String method, String message, boolean isDebug) {
         if (isDebug) {
-            if (Nub.isTesting)
+            if (DangoBot.isTesting)
                 return put("[" + method + "] [Debug] " + message);
             else
                 return false;
@@ -57,7 +57,7 @@ public class Debugger {
 
     public Boolean put(String message, boolean isDebug) {
         if (isDebug) {
-            if (Nub.isTesting)
+            if (DangoBot.isTesting)
                 return put("[Debug] " + message);
             else
                 return false;
