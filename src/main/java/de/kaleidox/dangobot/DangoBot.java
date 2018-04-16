@@ -21,7 +21,7 @@ public final class DangoBot {
     public static final Color COLOR_NICE_BLUE = new Color(33, 95, 169);
     public static final Color COLOR_ERROR_RED = new Color(200, 11, 33);
     public static final String OWNER_TAG = "@Kaleidox#0001";
-    private static final Long PERMISSION_STRING = 0L;
+    private static final Long PERMISSION_STRING = 470248512L;
     public static final String INVITE_LINK = "https://discordapp.com/oauth2/authorize?client_id=" + BOT_ID + "&scope=bot&permissions=" + PERMISSION_STRING;
 
     public static EmbedBuilder getBasicEmbed() {
