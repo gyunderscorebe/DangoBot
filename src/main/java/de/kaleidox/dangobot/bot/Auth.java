@@ -14,10 +14,11 @@ import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Auth {
+    private static final ConcurrentHashMap<Long, Auth> selfMap = new ConcurrentHashMap<>();
     private Debugger log = new Debugger(Auth.class.getName());
-
     private Server myServer;
     private Long serverId;
     private PropertiesMapper auths = new PropertiesMapper(new File("props/authUsers.properties"), ';');
@@ -27,7 +28,7 @@ public class Auth {
 
         serverId = myServer.getId();
 
-        Mapper.safePut(Main.authInstancesMap, serverId, this);
+        Mapper.safePut(selfMap, serverId, this);
     }
 
     /*
@@ -37,7 +38,7 @@ public class Auth {
     @returns The adequate Instance of this Object.
      */
     public static Auth softGet(Server server) {
-        return (Main.authInstancesMap.containsKey(server.getId()) ? Main.authInstancesMap.get(server.getId()) : Main.authInstancesMap.put(server.getId(), new Auth(server)));
+        return (selfMap.containsKey(server.getId()) ? selfMap.get(server.getId()) : selfMap.put(server.getId(), new Auth(server)));
     }
 
     public boolean isAuth(User user) {

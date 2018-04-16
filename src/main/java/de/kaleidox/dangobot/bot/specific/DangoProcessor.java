@@ -1,6 +1,5 @@
 package de.kaleidox.dangobot.bot.specific;
 
-import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
@@ -13,8 +12,10 @@ import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DangoProcessor {
+    private static final ConcurrentHashMap<Long, DangoProcessor> selfMap = new ConcurrentHashMap<>();
     private Server myServer;
     private long serverId;
     private int counter, counterMax;
@@ -43,7 +44,7 @@ public class DangoProcessor {
         this.counterMax = Integer.parseInt(settings.softGet(0, 100));
         this.emoji = new Emoji(settings.softGet(1, "\uD83C\uDF61"));
 
-        Mapper.safePut(Main.dangoProcessorMap, serverId, this);
+        Mapper.safePut(selfMap, serverId, this);
     }
 
     /*
@@ -53,7 +54,7 @@ public class DangoProcessor {
     @returns The adequate Instance of this Object.
      */
     public static DangoProcessor softGet(Server server) {
-        return (Main.dangoProcessorMap.containsKey(server.getId()) ? Main.dangoProcessorMap.get(server.getId()) : Main.dangoProcessorMap.put(server.getId(), new DangoProcessor(server)));
+        return (selfMap.containsKey(server.getId()) ? selfMap.get(server.getId()) : selfMap.put(server.getId(), new DangoProcessor(server)));
     }
 
     public void increment(Message msg) {

@@ -1,6 +1,5 @@
 package de.kaleidox.dangobot;
 
-import de.kaleidox.dangobot.bot.Auth;
 import de.kaleidox.dangobot.bot.Command;
 import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
@@ -23,8 +22,6 @@ public class Main {
     public final static HashMap<String, ConcurrentHashMap<String, String>> MAPS = new HashMap<>();
     public static DiscordApi API;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<Long, Auth> authInstancesMap = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<Long, DangoProcessor> dangoProcessorMap = new ConcurrentHashMap<>();
     private static Debugger log = new Debugger(Main.class.getName());
 
     public static void main(String args[]) {
