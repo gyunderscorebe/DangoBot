@@ -58,20 +58,8 @@ public class Main {
                         } else {
                             Server srv = event.getServer().get();
 
-                            SuccessState commandState = Command.processCommand(msg);
-
-                            switch (commandState) {
-                                case NOT_RUN:
-                                    DangoProcessor.softGet(srv).increment(msg);
-                                    break;
-                                case SUCCESSFUL:
-                                    //break;
-                                case ERRORED:
-                                case UNAUTHORIZED:
-                                case UNSUCCESSFUL:
-                                    commandState.evaluateForMessage(msg);
-                                    break;
-                            }
+                            Command.processCommand(msg);
+                            DangoProcessor.softGet(srv).increment(msg);
                         }
                     });
 

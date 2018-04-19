@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PropertiesMapper {
@@ -139,6 +140,18 @@ public class PropertiesMapper {
             map.remove(fromKey.toString());
 
         return this;
+    }
+
+    public void removeKey(Object key) {
+        values.remove(key.toString());
+    }
+
+    public int mapSize() {
+        return values.size();
+    }
+
+    public Set<Map.Entry<String, ArrayList<String>>> entrySet() {
+        return values.entrySet();
     }
 
     // Write to Map, end part

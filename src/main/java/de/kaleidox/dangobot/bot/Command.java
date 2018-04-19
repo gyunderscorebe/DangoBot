@@ -7,10 +7,13 @@ import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
+import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.emoji.CustomEmoji;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
@@ -19,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -70,6 +74,8 @@ public enum Command {
                     SuccessState.ERRORED.withMessage("The given Number is too big.").evaluateForMessage(msg);
                 }
             }
+        } else {
+            SuccessState.ERRORED.withMessage("Too many or too few arguments.").evaluateForMessage(msg);
         }
     }),
     EMOJI_INTERACTION("emoji", false, true, new int[]{0, 1}, msg -> {
@@ -91,6 +97,65 @@ public enum Command {
             } else if (customEmojis.size() == 0) {
                 dangoProcessor.setEmoji(new Emoji(param.get(0)));
             }
+        } else {
+            SuccessState.ERRORED.withMessage("Too many or too few arguments.").evaluateForMessage(msg);
+        }
+    }),
+
+    LEVELUP_ACTION_INTERACTION("action", false, true, new int[]{0, 2}, msg -> {
+        Server srv = msg.getServer().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+        PropertiesMapper actions = dangoProcessor.actions;
+
+        List<String> param = extractParam(msg);
+
+        Debugger.print(param.size());
+
+        if (param.size() == 0) {
+
+            EmbedBuilder embed = DangoBot.getBasicEmbed()
+                    .setDescription("Current Levelup-Actions:");
+
+            for (Map.Entry<String, ArrayList<String>> entry : actions.entrySet()) {
+                Optional<Role> roleById = Main.API.getRoleById(entry.getValue().get(1));
+
+                embed.addField(
+                        "Level "+entry.getKey()+":",
+                        entry.getValue().get(0).equals("applyrole") ? (roleById.map(role -> "Add Role: " + role.getMentionTag()).orElse("Unknown Role")) : "Add Dango"
+                );
+            }
+        } else if (param.size() >= 3 && param.size() <= 4) {
+            List<Role> mentionedRoles = msg.getMentionedRoles();
+
+            switch (param.get(0)) {
+                case "applyrole":
+                    if (actions.mapSize() < 25) {
+                    dangoProcessor.addAction(Integer.parseInt(param.get(0)), "applyrole", mentionedRoles.get(0));
+                    } else {
+                        SuccessState.ERRORED.withMessage("There are already too many Actions! ").evaluateForMessage(msg);
+                    }
+
+                    break;
+                case "removerole":
+                    if (actions.mapSize() < 25) {
+                        dangoProcessor.addAction(Integer.parseInt(param.get(0)),"removerole", mentionedRoles.get(0));
+                    } else {
+                        SuccessState.ERRORED.withMessage("There are already too many Actions! ").evaluateForMessage(msg);
+                    }
+
+                    break;
+                case "delete":
+                    dangoProcessor.actions.removeKey(param.get(0));
+                    break;
+            }
+        } else {
+            SuccessState.ERRORED.withMessage("Too many or too few arguments.\n" +
+                    "The correct use is:\n" +
+                    "dango action <Level> <Action> <Parameter>\n" +
+                    "\n" +
+                    "Example:\n" +
+                    "dango action 6 applyrole @Regular").evaluateForMessage(msg);
         }
     }),
 

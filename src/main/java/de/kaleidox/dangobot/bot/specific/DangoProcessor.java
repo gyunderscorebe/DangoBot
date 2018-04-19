@@ -1,5 +1,6 @@
 package de.kaleidox.dangobot.bot.specific;
 
+import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
@@ -7,21 +8,26 @@ import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DangoProcessor {
+    private Debugger log;
     private static final ConcurrentHashMap<Long, DangoProcessor> selfMap = new ConcurrentHashMap<>();
     private Server myServer;
     private long serverId;
     private int counter, counterMax;
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
+    public PropertiesMapper actions;
     private Emoji emoji;
+    private AtomicReference<User> lastDango = new AtomicReference<>();
 
     private DangoProcessor(Server server) {
         this.myServer = server;
@@ -41,8 +47,21 @@ public class DangoProcessor {
         }
         this.rankings = new PropertiesMapper(ranks, ';');
 
+        File action = new File("props/actions/" + serverId + ".properties");
+
+        if (!action.exists()) {
+            try {
+                action.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        this.actions = new PropertiesMapper(action, ';');
+
         this.counterMax = Integer.parseInt(settings.softGet(0, 100));
         this.emoji = new Emoji(settings.softGet(1, "\uD83C\uDF61"));
+
+        log = new Debugger(DangoProcessor.class.getName(), server.getName());
 
         Mapper.safePut(selfMap, serverId, this);
     }
@@ -98,5 +117,14 @@ public class DangoProcessor {
 
         settings.set(1, emoji.getPrintable());
         settings.write();
+    }
+
+    public void addAction(int level, String actionTitle, Role role) {
+        actions.add(level, actionTitle);
+        actions.add(level, role.getId());
+
+        log.put(actions.getAll(level));
+
+        actions.write();
     }
 }

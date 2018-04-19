@@ -24,7 +24,7 @@ public class Debugger {
         isSubclass = true;
     }
 
-    public static void print(String d) {
+    public static void print(Object d) {
         System.out.println(d);
     }
 
