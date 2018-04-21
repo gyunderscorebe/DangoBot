@@ -1,8 +1,10 @@
 package de.kaleidox.dangobot.bot.specific;
 
+import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.Mapper;
+import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -14,8 +16,12 @@ import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class DangoProcessor {
     private Debugger log;
@@ -72,7 +78,7 @@ public class DangoProcessor {
 
     @returns The adequate Instance of this Object.
      */
-    public static DangoProcessor softGet(Server server) {
+    public final static DangoProcessor softGet(Server server) {
         return (selfMap.containsKey(server.getId()) ? selfMap.get(server.getId()) : selfMap.put(server.getId(), new DangoProcessor(server)));
     }
 
@@ -119,11 +125,13 @@ public class DangoProcessor {
         settings.write();
     }
 
-    public void addAction(int level, String actionTitle, Role role) {
+    public void addRoleAction(int level, String actionTitle, Role role) {
         actions.add(level, actionTitle);
         actions.add(level, role.getId());
 
-        log.put(actions.getAll(level));
+        actions.write();
+    }
+
     public void removeAction(int level, String actionTitle) {
         actions.set(level, Utils.everyOfList(2, actions.getAll(level))
                 .stream()
@@ -134,6 +142,8 @@ public class DangoProcessor {
         actions.write();
     }
 
+    public void removeActions(int level) {
+        actions.removeKey(level);
 
         actions.write();
     }

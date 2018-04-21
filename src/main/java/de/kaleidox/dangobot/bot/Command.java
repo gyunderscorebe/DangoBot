@@ -102,7 +102,7 @@ public enum Command {
         }
     }),
 
-    LEVELUP_ACTION_INTERACTION("action", false, true, new int[]{0, 2}, msg -> {
+    LEVELUP_ACTION_INTERACTION("action", false, true, new int[]{0, 3}, msg -> {
         Server srv = msg.getServer().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
@@ -110,52 +110,97 @@ public enum Command {
 
         List<String> param = extractParam(msg);
 
-        Debugger.print(param.size());
-
         if (param.size() == 0) {
-
             EmbedBuilder embed = DangoBot.getBasicEmbed()
                     .setDescription("Current Levelup-Actions:");
+            StringBuilder field = new StringBuilder();
 
-            for (Map.Entry<String, ArrayList<String>> entry : actions.entrySet()) {
-                Optional<Role> roleById = Main.API.getRoleById(entry.getValue().get(1));
+            if (!actions.entrySet().isEmpty()) {
+                for (Map.Entry<String, ArrayList<String>> entry : actions.entrySet()) {
+                    for (List<String> that : Utils.everyOfList(2, entry.getValue())) {
+                        Optional<Role> roleById = Main.API.getRoleById(that.get(1));
 
-                embed.addField(
-                        "Level "+entry.getKey()+":",
-                        entry.getValue().get(0).equals("applyrole") ? (roleById.map(role -> "Add Role: " + role.getMentionTag()).orElse("Unknown Role")) : "Add Dango"
-                );
+                        switch (that.get(0)) {
+                            case "applyrole":
+                                field.append(roleById.map(role -> "Add Role: " + role.getMentionTag()).orElse("Unknown Role"));
+                                field.append("\n");
+                                break;
+                            case "removerole":
+                                field.append(roleById.map(role -> "Remove Role: " + role.getMentionTag()).orElse("Unknown Role"));
+                                field.append("\n");
+                                break;
+                            case "adddango":
+                            default:
+                                field.append("Add Dango");
+                                field.append("\n");
+                                break;
+                        }
+                    }
+
+                    embed.addField("Level "+entry.getKey()+":", field.toString());
+                    field = new StringBuilder();
+                }
+            } else {
+                embed.addField("Whoops!", "There are currently no LevelUp-Actions.");
             }
-        } else if (param.size() >= 3 && param.size() <= 4) {
+
+            stc.sendMessage(embed);
+        } else if (param.size() >= 2 && param.size() <= 3) {
+            int level = Integer.parseInt(param.get(1));
             List<Role> mentionedRoles = msg.getMentionedRoles();
+            Role role;
+            Optional<Role> roleOpt = mentionedRoles.stream()
+                    .limit(1)
+                    .findAny();
 
             switch (param.get(0)) {
                 case "applyrole":
-                    if (actions.mapSize() < 25) {
-                    dangoProcessor.addAction(Integer.parseInt(param.get(0)), "applyrole", mentionedRoles.get(0));
+                    if (roleOpt.isPresent()) {
+                        role = roleOpt.get();
+
+                        if (actions.mapSize() < 25 && !actions.containsValue(level, role.getId())) {
+                            dangoProcessor.addRoleAction(level, "applyrole", role);
+                        } else if (!actions.containsValue(level, role.getId())) {
+                            SuccessState.ERRORED.withMessage("There is already an Action with this Role!").evaluateForMessage(msg);
+                        } else {
+                            SuccessState.ERRORED.withMessage("There are already too many Actions!").evaluateForMessage(msg);
+                        }
                     } else {
-                        SuccessState.ERRORED.withMessage("There are already too many Actions! ").evaluateForMessage(msg);
+                        SuccessState.ERRORED.withMessage("No Role Found.").evaluateForMessage(msg);
                     }
 
                     break;
                 case "removerole":
-                    if (actions.mapSize() < 25) {
-                        dangoProcessor.addAction(Integer.parseInt(param.get(0)),"removerole", mentionedRoles.get(0));
+                    if (roleOpt.isPresent()) {
+                        role = roleOpt.get();
+
+                        if (actions.mapSize() < 25 && !actions.containsValue(level, role.getId())) {
+                            dangoProcessor.addRoleAction(level, "removerole", role);
+                        } else if (!actions.containsValue(level, role.getId())) {
+                            SuccessState.ERRORED.withMessage("There is already an Action with this Role!").evaluateForMessage(msg);
+                        } else {
+                            SuccessState.ERRORED.withMessage("There are already too many Actions!").evaluateForMessage(msg);
+                        }
                     } else {
-                        SuccessState.ERRORED.withMessage("There are already too many Actions! ").evaluateForMessage(msg);
+                        SuccessState.ERRORED.withMessage("No Role Found.").evaluateForMessage(msg);
                     }
 
                     break;
                 case "delete":
-                    dangoProcessor.actions.removeKey(param.get(0));
+                    if (param.size() == 3) {
+                        dangoProcessor.removeAction(level, param.get(2));
+                    } else {
+                        dangoProcessor.removeActions(level);
+                    }
                     break;
-            }
+                }
         } else {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.\n" +
                     "The correct use is:\n" +
                     "dango action <Level> <Action> <Parameter>\n" +
                     "\n" +
                     "Example:\n" +
-                    "dango action 6 applyrole @Regular").evaluateForMessage(msg);
+                    "dango action applyrole 6 @Regular").evaluateForMessage(msg);
         }
     }),
 
