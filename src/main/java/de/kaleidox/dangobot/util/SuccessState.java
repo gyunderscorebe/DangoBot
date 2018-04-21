@@ -75,7 +75,7 @@ public enum SuccessState {
 
     public EmbedBuilder getMessageEmbed(EmbedBuilder baseEmbed) {
         if (hasMessage && this != SUCCESSFUL)
-            return baseEmbed.addField(title == null ? "Title not Defined." : title, text, inline);
+            return baseEmbed.addField(title == null ? "There was an error:" : title, text, inline);
         else if (this == SUCCESSFUL)
             return baseEmbed.addField("You're fine.", "Everything's fine.");
         else

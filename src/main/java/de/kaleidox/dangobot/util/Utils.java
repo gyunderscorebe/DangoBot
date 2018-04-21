@@ -3,12 +3,15 @@ package de.kaleidox.dangobot.util;
 
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.permission.Role;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class Utils {
     private static Debugger log = new Debugger(Utils.class.getName());
@@ -109,5 +112,28 @@ public final class Utils {
 
     public static boolean isNumeric(String e) {
         return e.matches("[0-9]+");
+    }
+
+    public static <T> List<List<T>> everyOfList(int every, ArrayList<T> of) {
+        ArrayList<List<T>> val = new ArrayList<>();
+        ArrayList<T> count = new ArrayList<>();
+        int i = 0, run = 0;
+
+        while (run != of.size()) {
+            if (i == every)
+                i = 0;
+
+            if (i == 0) {
+                count = new ArrayList<>();
+                val.add(count);
+            }
+
+            count.add(of.get(run));
+
+            i++;
+            run++;
+        }
+
+        return val;
     }
 }
