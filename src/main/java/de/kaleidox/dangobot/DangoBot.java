@@ -3,7 +3,6 @@ package de.kaleidox.dangobot;
 import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

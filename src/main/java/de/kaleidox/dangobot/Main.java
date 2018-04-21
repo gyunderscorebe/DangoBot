@@ -5,7 +5,6 @@ import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Mapper;
-import de.kaleidox.dangobot.util.SuccessState;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.Emoji;

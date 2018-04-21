@@ -16,22 +16,18 @@ import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class DangoProcessor {
-    private Debugger log;
     private static final ConcurrentHashMap<Long, DangoProcessor> selfMap = new ConcurrentHashMap<>();
+    public PropertiesMapper actions;
+    private Debugger log;
     private Server myServer;
     private long serverId;
     private int counter, counterMax;
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
-    public PropertiesMapper actions;
     private Emoji emoji;
     private AtomicReference<User> lastDango = new AtomicReference<>();
 

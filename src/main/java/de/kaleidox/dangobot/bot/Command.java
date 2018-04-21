@@ -137,7 +137,7 @@ public enum Command {
                         }
                     }
 
-                    embed.addField("Level "+entry.getKey()+":", field.toString());
+                    embed.addField("Level " + entry.getKey() + ":", field.toString());
                     field = new StringBuilder();
                 }
             } else {
@@ -193,7 +193,7 @@ public enum Command {
                         dangoProcessor.removeActions(level);
                     }
                     break;
-                }
+            }
         } else {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.\n" +
                     "The correct use is:\n" +

@@ -3,15 +3,12 @@ package de.kaleidox.dangobot.util;
 
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.permission.Role;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class Utils {
     private static Debugger log = new Debugger(Utils.class.getName());
