@@ -7,6 +7,7 @@ import de.kaleidox.dangobot.util.Mapper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -101,6 +102,15 @@ public class PropertiesMapper {
         return item.toString();
     }
 
+    public ArrayList<String> set(Object key, ArrayList<String> newValues) {
+        if (values.containsKey(key.toString()))
+            values.replace(key.toString(), newValues);
+        else
+            values.put(key.toString(), newValues);
+
+        return newValues;
+    }
+
     public ArrayList<String> getAll(Object fromKey) {
         return values.get(fromKey.toString());
     }
@@ -160,7 +170,8 @@ public class PropertiesMapper {
         values.forEach((key, value) ->
                 map.put(key, value
                         .stream()
-                        .collect(CustomCollectors.toConcatenatedString(splitWith)
+                        .collect(
+                                CustomCollectors.toConcatenatedString(splitWith)
                         )
                 )
         );

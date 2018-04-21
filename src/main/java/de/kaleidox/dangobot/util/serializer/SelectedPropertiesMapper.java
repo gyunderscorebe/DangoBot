@@ -62,6 +62,10 @@ public class SelectedPropertiesMapper extends PropertiesMapper {
             return set(selected, index, value);
     }
 
+    public ArrayList<String> set(ArrayList<String> newValues) {
+        return super.set(selected, newValues);
+    }
+
     public ArrayList<String> getAll() {
         if (selected.isEmpty())
             throw new NullPointerException("No Key selected.");
