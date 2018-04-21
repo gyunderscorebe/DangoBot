@@ -1,7 +1,9 @@
 package de.kaleidox.dangobot.util;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -38,6 +40,17 @@ public class CustomCollectors {
                 },
                 sb -> sb.substring(0, sb.length() - splitWith.toString().length()),
                 CH_NOID);
+    }
+
+    public static Collector<List<String>, ?, ArrayList<String>> listMerge() {
+        return new CustomCollectorImpl<>(
+                ArrayList::new,
+                ArrayList::addAll,
+                (left, right) -> {
+                    left.addAll(right);
+                    return left;
+                },
+                CH_ID);
     }
 
     static class CustomCollectorImpl<T, A, R> implements Collector<T, A, R> {

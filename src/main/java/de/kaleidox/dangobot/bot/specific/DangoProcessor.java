@@ -124,6 +124,16 @@ public class DangoProcessor {
         actions.add(level, role.getId());
 
         log.put(actions.getAll(level));
+    public void removeAction(int level, String actionTitle) {
+        actions.set(level, Utils.everyOfList(2, actions.getAll(level))
+                .stream()
+                .filter(l -> !l.get(0).equals(actionTitle))
+                .collect(CustomCollectors.listMerge())
+        );
+
+        actions.write();
+    }
+
 
         actions.write();
     }
