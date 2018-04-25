@@ -195,12 +195,13 @@ public enum Command {
                     break;
             }
         } else {
-            SuccessState.ERRORED.withMessage("Too many or too few arguments.\n" +
+            SuccessState.ERRORED.withMessage("Too many or too few arguments.",
                     "The correct use is:\n" +
-                    "dango action <Level> <Action> <Parameter>\n" +
+                    "`dango action <Actiontitle> <Level> [Parameter]` or `dango action delete <Level> <Actiontitle>`\n" +
                     "\n" +
-                    "Example:\n" +
-                    "dango action applyrole 6 @Regular").evaluateForMessage(msg);
+                    "Examples:\n" +
+                    "`dango action applyrole 6 @Regular` - Applies the role @Regular for the 6th level.\n" +
+                    "`dango action delete 4 ` - Removes the REMOVEROLE Action from Level 4").evaluateForMessage(msg);
         }
     }),
 
