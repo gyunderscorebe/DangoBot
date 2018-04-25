@@ -133,7 +133,15 @@ public class PropertiesMapper {
     }
 
     public boolean containsValue(Object key, Object value) {
-        return map.get(key.toString()).contains(value.toString());
+        if (values == null) {
+            return false;
+        } else {
+            if (values.containsKey(key.toString())) {
+                return values.get(key.toString()).contains(value.toString());
+            } else {
+                return false;
+            }
+        }
     }
 
     public PropertiesMapper removeValue(Object fromKey, Object value) {
