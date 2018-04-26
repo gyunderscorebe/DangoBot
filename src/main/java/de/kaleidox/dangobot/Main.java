@@ -5,6 +5,7 @@ import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Mapper;
+import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.Emoji;
@@ -13,6 +14,8 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -20,12 +23,18 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public final static ConcurrentHashMap<File, ConcurrentHashMap<String, String>> MAPS = new ConcurrentHashMap<>();
     public static DiscordApi API;
+    public static DiscordBotListAPI DBLAPI;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
     private static Debugger log = new Debugger(Main.class.getName());
 
     public static void main(String args[]) {
         Mapper.packMaps();
         Mapper.loadMaps();
+
+        DBLAPI = new DiscordBotListAPI
+                .Builder()
+                .token(DangoBot.DBL_BOT_TOKEN)
+                .build();
 
         new DiscordApiBuilder()
                 .setToken(DangoBot.BOT_TOKEN)
@@ -35,7 +44,13 @@ public class Main {
                     StatusScroll status = new StatusScroll(api);
 
                     //// Cosmetics
-                    api.updateUsername("Dango Bot");
+                    api.updateUsername(DangoBot.BOT_NAME);
+
+                    try {
+                        api.updateAvatar(new URL(DangoBot.ICON_URL));
+                    } catch (MalformedURLException e) {
+                        log.put("Failed to Update the Avatar");
+                    }
 
                     //// Actual Bot Part
                     api.addMessageCreateListener(event -> {
@@ -84,6 +99,7 @@ public class Main {
                     });
 
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
+                    api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> DBLAPI.setStats(API.getYourself().getIdAsString(), API.getServers().size()), 1, 1, TimeUnit.MINUTES); // Update DBL server Count every Minute
                 });
     }
 }

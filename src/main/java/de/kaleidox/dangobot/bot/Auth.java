@@ -117,7 +117,7 @@ public class Auth {
 
         if (select.size() != 0) {
             for (String x : select.getAll()) {
-                usr = Main.API.getUserById(x).join();
+                usr = Main.API.getUserById(x).join(); // TODO: Change this to using then... Methods
 
                 eb.addField(usr.getName(), usr.getMentionTag(), true);
             }
