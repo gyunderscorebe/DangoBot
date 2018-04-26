@@ -62,6 +62,7 @@ public class DangoProcessor {
 
         this.counterMax = Integer.parseInt(settings.softGet(0, 100));
         this.emoji = new Emoji(settings.softGet(1, "\uD83C\uDF61"));
+        this.counter = Integer.parseInt(settings.softGet(2, 0));
 
         log = new Debugger(DangoProcessor.class.getName(), server.getName());
 
@@ -87,6 +88,8 @@ public class DangoProcessor {
 
             counter++;
 
+            settings.set(2, counter);
+
             if (counter >= counterMax) {
                 giveDango(usr, stc);
             }
@@ -94,7 +97,7 @@ public class DangoProcessor {
     }
 
     public void giveDango(User user, ServerTextChannel inChannel) {
-        rankings.set(user.getId(), 0, rankings.softGet(user.getId(), 0, 0) + 1);
+        rankings.set(user.getId(), 0, Integer.parseInt(rankings.softGet(user.getId(), 0, 0)) + 1);
         rankings.write();
 
         inChannel.sendMessage(emoji.getPrintable()).thenRun(() -> counter = 0);
