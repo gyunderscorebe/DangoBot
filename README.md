@@ -2,11 +2,6 @@
 
 <br />
 <link href="https://fonts.googleapis.com/css?family=Montserrat|Poppins|Roboto" rel="stylesheet">
-<style>
-  .bot-name {
-  	font-family: Montserrat !important;
-  }
-</style>
 <br />
 <br />
 After the Bot has been added to your Server, only Administrators have permission to set it up.
