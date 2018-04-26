@@ -106,7 +106,7 @@ public class DangoProcessor {
 
     public void setCounterMax(int counterMax) {
         this.counterMax = counterMax;
-        settings.set(0, counter);
+        settings.set(0, counterMax);
         settings.write();
     }
 
