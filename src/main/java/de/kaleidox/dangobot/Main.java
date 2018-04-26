@@ -80,20 +80,14 @@ public class Main {
 
                     //// Shenanigans
                     // Wastebaskets
-                    api.addMessageCreateListener(msgAdd -> {
-                        Message msg = msgAdd.getMessage();
+                    api.addReactionAddListener(event -> {
+                        Emoji emoji = event.getEmoji();
+                        Message msg = event.requestMessage().join();
 
-                        if (msg.getAuthor().isYourself() && !msg.getPrivateChannel().isPresent()) {
-                            msg.addReaction("🗑");
-                            msg.addReactionAddListener(reaAdd -> {
-                                Emoji emoji = reaAdd.getEmoji();
-
-                                if (!reaAdd.getUser().isBot()) {
-                                    emoji.asUnicodeEmoji().ifPresent(then -> {
-                                        if (then.equals("🗑")) {
-                                            msg.delete();
-                                        }
-                                    });
+                        if (!event.getUser().isBot()) {
+                            emoji.asUnicodeEmoji().ifPresent(then -> {
+                                if (then.equals("🗑") || then.equals("\uD83D\uDEAE")) {
+                                    msg.delete();
                                 }
                             });
                         }
