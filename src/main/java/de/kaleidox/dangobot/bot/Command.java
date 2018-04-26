@@ -64,7 +64,7 @@ public enum Command {
             SuccessState.SUCCESSFUL.evaluateForMessage(msg);
         });
     }),
-    INVITE("invitelink", true, false, new int[]{0, 0}, msg -> {
+    INVITE(new String[]{"invite", "invitelink"}, true, false, new int[]{0, 0}, msg -> {
         msg.getUserAuthor().ifPresent(user -> {
             user.openPrivateChannel().thenAccept(privateChannel -> {
                 privateChannel.sendMessage(EmbedLibrary.INVITE.getEmbed());
@@ -72,7 +72,7 @@ public enum Command {
             });
         });
     }),
-    DISCORD("discordlink", true, false, new int[]{0, 0}, msg -> {
+    DISCORD(new String[]{"discord", "discordlink"}, true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> {
             event.sendMessage(EmbedLibrary.DISCORD.getEmbed());
             SuccessState.SUCCESSFUL.evaluateForMessage(msg);
@@ -85,7 +85,7 @@ public enum Command {
         });
     }),
 
-    SCOREBOARD("scores", false, false, new int[]{0, 0}, msg -> {
+    SCOREBOARD(new String[]{"stats", "scores", "scoreboard"}, false, false, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
@@ -95,7 +95,7 @@ public enum Command {
         msg.delete("Done");
     }),
 
-    COUNT_INTERACTION("count", false, true, new int[]{0, 1}, msg -> {
+    COUNT_INTERACTION(new String[]{"count", "per", "every"}, false, true, new int[]{0, 1}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
@@ -123,7 +123,7 @@ public enum Command {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.").evaluateForMessage(msg);
         }
     }),
-    EMOJI_INTERACTION("emoji", false, true, new int[]{0, 1}, msg -> {
+    EMOJI_INTERACTION(new String[]{"emoji", "custom"}, false, true, new int[]{0, 1}, msg -> {
         Server srv = msg.getServer().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
@@ -151,7 +151,7 @@ public enum Command {
         }
     }),
 
-    LEVELUP_ACTION_INTERACTION("action", false, true, new int[]{0, 3}, msg -> {
+    LEVELUP_ACTION_INTERACTION(new String[]{"levelupaction", "action"}, false, true, new int[]{0, 3}, msg -> {
         Server srv = msg.getServer().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
@@ -254,7 +254,7 @@ public enum Command {
         }
     }),
 
-    ADD_AUTH("auth", false, true, new int[]{1, 10}, msg -> {
+    ADD_AUTH(new String[]{"auth", "auth-add"}, false, true, new int[]{1, 10}, msg -> {
         Server srv = msg.getServer().get();
         List<User> mentionedUsers = msg.getMentionedUsers();
         Auth auth = Auth.softGet(srv);
@@ -265,7 +265,7 @@ public enum Command {
             mentionedUsers.forEach(user -> auth.addAuth(user).evaluateForMessage(msg));
         }
     }),
-    REMOVE_AUTH("unauth", false, true, new int[]{1, 10}, msg -> {
+    REMOVE_AUTH(new String[]{"unauth", "auth-remove"}, false, true, new int[]{1, 10}, msg -> {
         Server srv = msg.getServer().get();
         List<User> mentionedUsers = msg.getMentionedUsers();
         Auth auth = Auth.softGet(srv);
@@ -276,7 +276,7 @@ public enum Command {
             mentionedUsers.forEach(user -> auth.removeAuth(user).evaluateForMessage(msg));
         }
     }),
-    AUTHS("auths", false, true, new int[]{0, 0}, msg -> {
+    AUTHS(new String[]{"auths", "auth-list"}, false, true, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
         Auth auth = Auth.softGet(srv);
 
@@ -292,9 +292,7 @@ public enum Command {
 
         if (msg.getAuthor().isBotOwner()) {
             chl.asServerTextChannel().ifPresent(stc -> {
-                if (usr.isBotOwner()) {
-                    DangoProcessor.softGet(srv);
-                }
+                // do stuff
             });
         }
     });
@@ -309,14 +307,22 @@ public enum Command {
     }};
     private static Debugger log = new Debugger(Command.class.getName());
     public boolean canRunPrivately;
-    private String keyword;
+    private String[] keywords;
     private boolean requiresAuth;
     // Command Usage Stuff
     private int[] parameterRange;
     private Consumer<Message> consumer;
 
     Command(String keyword, boolean canRunPrivately, boolean requiresAuth, int[] parameterRange, Consumer<Message> consumer) {
-        this.keyword = keyword;
+        this.keywords = new String[]{keyword};
+        this.canRunPrivately = canRunPrivately;
+        this.requiresAuth = requiresAuth;
+        this.parameterRange = parameterRange;
+        this.consumer = consumer;
+    }
+
+    Command(String[] keywords, boolean canRunPrivately, boolean requiresAuth, int[] parameterRange, Consumer<Message> consumer) {
+        this.keywords = keywords;
         this.canRunPrivately = canRunPrivately;
         this.requiresAuth = requiresAuth;
         this.parameterRange = parameterRange;
@@ -374,10 +380,10 @@ public enum Command {
 
     private static Optional<Command> findFromKeyword(String keyword) {
         if (keyword != null) {
-            for (Command x : VALUES) {
-                if (x.keyword.equals(keyword))
-                    return Optional.of(x);
-            }
+            return VALUES.stream()
+                    .filter(c -> Arrays.stream(c.keywords)
+                            .anyMatch(w -> w.equals(keyword)))
+                    .findAny();
         }
 
         return Optional.empty();
