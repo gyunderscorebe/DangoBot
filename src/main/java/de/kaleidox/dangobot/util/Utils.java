@@ -111,7 +111,7 @@ public final class Utils {
         return e.matches("[0-9]+");
     }
 
-    public static <T> List<List<T>> everyOfList(int every, ArrayList<T> of) {
+    public static <T> List<List<T>> everyOfList(int every, List<T> of) {
         ArrayList<List<T>> val = new ArrayList<>();
         ArrayList<T> count = new ArrayList<>();
         int i = 0, run = 0;
