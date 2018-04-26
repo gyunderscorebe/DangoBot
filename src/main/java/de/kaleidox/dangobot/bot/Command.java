@@ -49,26 +49,40 @@ public enum Command {
                         .addField("No Help found!", "No help found.")
                 );
             }
+            SuccessState.SUCCESSFUL.evaluateForMessage(msg);
         }
     }),
     INFO("info", true, false, new int[]{0, 0}, msg -> {
-        msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.INFO.getEmbed()));
+        msg.getServerTextChannel().ifPresent(event -> {
+            event.sendMessage(EmbedLibrary.INFO.getEmbed());
+            SuccessState.SUCCESSFUL.evaluateForMessage(msg);
+        });
     }),
     BUGREPORT("bug", true, false, new int[]{0, 0}, msg -> {
-        msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.BUGREPORT.getEmbed()));
+        msg.getServerTextChannel().ifPresent(event -> {
+            event.sendMessage(EmbedLibrary.BUGREPORT.getEmbed());
+            SuccessState.SUCCESSFUL.evaluateForMessage(msg);
+        });
     }),
     INVITE("invitelink", true, false, new int[]{0, 0}, msg -> {
         msg.getUserAuthor().ifPresent(user -> {
             user.openPrivateChannel().thenAccept(privateChannel -> {
                 privateChannel.sendMessage(EmbedLibrary.INVITE.getEmbed());
+                SuccessState.SUCCESSFUL.evaluateForMessage(msg);
             });
         });
     }),
     DISCORD("discordlink", true, false, new int[]{0, 0}, msg -> {
-        msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.DISCORD.getEmbed()));
+        msg.getServerTextChannel().ifPresent(event -> {
+            event.sendMessage(EmbedLibrary.DISCORD.getEmbed());
+            SuccessState.SUCCESSFUL.evaluateForMessage(msg);
+        });
     }),
     DONATE("donate", true, false, new int[]{0, 0}, msg -> {
-        msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.DONATE.getEmbed()));
+        msg.getServerTextChannel().ifPresent(event -> {
+            event.sendMessage(EmbedLibrary.DONATE.getEmbed());
+            SuccessState.SUCCESSFUL.evaluateForMessage(msg);
+        });
     }),
 
     COUNT_INTERACTION("count", false, true, new int[]{0, 1}, msg -> {
@@ -88,6 +102,7 @@ public enum Command {
                 long val = Long.parseLong(param.get(0));
                 if (val <= Integer.MAX_VALUE && val >= 25) {
                     dangoProcessor.setCounterMax(Integer.parseInt(param.get(0)));
+                    SuccessState.SUCCESSFUL.evaluateForMessage(msg);
                 } else if (val < 25) {
                     SuccessState.ERRORED.withMessage("The given Number is too small, needs to be greater than 25.").evaluateForMessage(msg);
                 } else {
