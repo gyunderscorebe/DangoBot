@@ -90,7 +90,7 @@ public class Debugger {
                 .append(msg.getAuthor().getName())
                 .append("#")
                 .append(msg.getAuthor().getDiscriminator().get())
-                .append("\nContent: \"")
+                .append(" Content: \"")
                 .append(msg.getContent())
                 .append("\"");
 

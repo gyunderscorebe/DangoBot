@@ -7,8 +7,11 @@ import org.javacord.api.entity.message.Message;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 
 public final class Utils {
     private static Debugger log = new Debugger(Utils.class.getName());
@@ -129,6 +132,29 @@ public final class Utils {
 
             i++;
             run++;
+        }
+
+        return val;
+    }
+
+    public static <K, V, T, G> HashMap<T, G> reformatMap(Map<K, V> map, Function<K, T> keyFormatter, Function<V, G> valueFormatter) {
+        HashMap<T, G> val = new HashMap<>();
+
+        map.forEach((key, value) -> {
+            val.put(
+                    keyFormatter.apply(key),
+                    valueFormatter.apply(value)
+            );
+        });
+
+        return val;
+    }
+
+    public static <T> ArrayList<T> reverse(List<T> list) {
+        ArrayList<T> val = new ArrayList<>();
+
+        for (int i = list.size()-1; i > -1; i--) {
+            val.add(list.get(i));
         }
 
         return val;

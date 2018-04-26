@@ -85,6 +85,16 @@ public enum Command {
         });
     }),
 
+    SCOREBOARD("scores", false, false, new int[]{0, 0}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+
+        dangoProcessor.sendScoreboard(stc);
+        msg.delete("Done");
+    }),
+
     COUNT_INTERACTION("count", false, true, new int[]{0, 1}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
