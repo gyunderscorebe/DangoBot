@@ -38,7 +38,12 @@ public class CustomCollectors {
                     left.append(splitWith.toString());
                     return left;
                 },
-                sb -> sb.substring(0, sb.length() - splitWith.toString().length()),
+                sb -> {
+                    if (sb.length() > 1)
+                        return sb.substring(0, sb.length() - splitWith.toString().length());
+                    else
+                        return "";
+                },
                 CH_NOID);
     }
 
