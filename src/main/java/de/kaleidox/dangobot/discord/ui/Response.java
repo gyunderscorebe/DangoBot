@@ -3,6 +3,7 @@ package de.kaleidox.dangobot.discord.ui;
 import com.vdurmont.emoji.EmojiParser;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.listener.message.MessageDeleteListener;
 import org.javacord.api.listener.message.reaction.ReactionAddListener;
 import org.javacord.api.listener.message.reaction.ReactionRemoveListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -10,16 +11,27 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Respond {
+public class Response {
     public static void addInfoReaction(Message message, String emojiTag, Boolean deleteAfterSend, EmbedBuilder infoEmbed) {
         String emoji = EmojiParser.parseToUnicode(emojiTag);
-        message.addReaction(emoji).exceptionally(ExceptionLogger.get());
         AtomicReference<Message> sentMessage = new AtomicReference<>();
+
+        message.addReaction(emoji)
+                .exceptionally(ExceptionLogger.get());
+
+        MessageDeleteListener deleteListener = event -> {
+            message.removeOwnReactionByEmoji(emoji);
+            message.delete();
+            message.getMessageAttachableListeners().forEach((key, value) -> message.removeMessageAttachableListener(key));
+        };
 
         ReactionAddListener addListener = event -> {
             if (!event.getUser().isYourself() && event.getEmoji().asUnicodeEmoji().map(emoji::equals).orElse(false)) {
                 message.getChannel().sendMessage(infoEmbed)
-                        .thenAccept(sentMessage::set)
+                        .thenAccept(myMsg -> {
+                            sentMessage.set(myMsg);
+                            myMsg.addMessageAttachableListener(deleteListener);
+                        })
                         .thenAccept(nothing -> {
                             if (deleteAfterSend) {
                                 message.delete().exceptionally(ExceptionLogger.get());
