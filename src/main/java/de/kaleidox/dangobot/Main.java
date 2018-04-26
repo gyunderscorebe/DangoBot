@@ -12,13 +12,13 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
-import java.util.HashMap;
+import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    public final static HashMap<String, ConcurrentHashMap<String, String>> MAPS = new HashMap<>();
+    public final static ConcurrentHashMap<File, ConcurrentHashMap<String, String>> MAPS = new ConcurrentHashMap<>();
     public static DiscordApi API;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
     private static Debugger log = new Debugger(Main.class.getName());
@@ -83,7 +83,6 @@ public class Main {
                         }
                     });
 
-                    api.getThreadPool().getScheduler().scheduleAtFixedRate(Mapper::saveMaps, 30, 30, TimeUnit.SECONDS); // Saving Maps every 30 Seconds
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
                 });
     }
