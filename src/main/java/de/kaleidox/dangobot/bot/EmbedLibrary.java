@@ -14,6 +14,7 @@ public enum EmbedLibrary {
     ),
     INFO(DangoBot.getBasicEmbed()
             .addField("About the bot:", "" +
+                    "Running on Version " + DangoBot.VERSION_NUMBER + "\n" +
                     "Made with love by " + DangoBot.OWNER_TAG + " in April 2018\n" +
                     "Running on Javacord Version " + Javacord.VERSION + "\n" +
                     "\n" +

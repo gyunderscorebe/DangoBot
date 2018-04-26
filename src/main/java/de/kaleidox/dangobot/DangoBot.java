@@ -10,7 +10,7 @@ import java.io.IOException;
 public final class DangoBot {
     public static final String VERSION_NUMBER = "1.0";
     public static final boolean isTesting = System.getProperty("os.name").equals("Windows 10");
-    public static final Long BOT_ID = 392065608398798851L;
+    public static final Long BOT_ID = 439082176537952267L;
     public static final Long DBL_BOT_ID = BOT_ID;
     public static final String DBL_BOT_TOKEN = readFile("keys/tokenDiscordBotsOrg.txt");
     public static final String BOT_TOKEN = readFile(isTesting ? "keys/tokenTest.txt" : "keys/tokenMain.txt");

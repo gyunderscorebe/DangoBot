@@ -13,6 +13,13 @@ configure(applicationDistribution) {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.incremental = true
+}
+
+mainClassName = 'de.kaleidox.dangobot.Main'
+
 applicationDefaultJvmArgs = ["-Dlogback.configurationFile=conf/logback.xml", "-XX:-OmitStackTraceInFastThrow"]
 
 sourceCompatibility = 1.8
