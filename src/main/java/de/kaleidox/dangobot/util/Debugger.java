@@ -81,7 +81,20 @@ public class Debugger {
     public Boolean print(Message msg) {
         StringBuilder info = new StringBuilder();
 
-        info.append("");
+        info
+                .append("Server: ")
+                .append(msg.getServer().get().getName())
+                .append(" Channel: ")
+                .append(msg.getServerTextChannel().get().getName())
+                .append(" Author: ")
+                .append(msg.getAuthor().getName())
+                .append("#")
+                .append(msg.getAuthor().getDiscriminator().get())
+                .append("\nContent: \"")
+                .append(msg.getContent())
+                .append("\"");
+
+        put(info);
 
         return false;
     }
