@@ -2,6 +2,7 @@ package de.kaleidox.dangobot.util.serializer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -66,7 +67,7 @@ public class SelectedPropertiesMapper extends PropertiesMapper {
         return super.set(selected, newValues);
     }
 
-    public ArrayList<String> getAll() {
+    public List<String> getAll() {
         if (selected.isEmpty())
             throw new NullPointerException("No Key selected.");
         else

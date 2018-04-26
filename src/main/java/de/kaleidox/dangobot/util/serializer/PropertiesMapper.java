@@ -7,13 +7,15 @@ import de.kaleidox.dangobot.util.Mapper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class PropertiesMapper {
     protected ConcurrentHashMap<String, String> map;
-    protected ConcurrentHashMap<String, ArrayList<String>> values = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<String, List<String>> values = new ConcurrentHashMap<>();
     protected IOPort<ConcurrentHashMap<String, String>, Map<String, String>> ioPort;
     private Character splitWith;
     private Debugger log = new Debugger(PropertiesMapper.class.getName());
@@ -110,7 +112,7 @@ public class PropertiesMapper {
         return newValues;
     }
 
-    public ArrayList<String> getAll(Object fromKey) {
+    public List<String> getAll(Object fromKey) {
         return values.get(fromKey.toString());
     }
 
@@ -145,16 +147,19 @@ public class PropertiesMapper {
     }
 
     public PropertiesMapper removeValue(Object fromKey, Object value) {
-        map.put(fromKey.toString(), new ArrayList<>(Arrays
-                .asList(map.get(fromKey.toString())
-                        .split(this.splitWith.toString())))
-                .stream()
-                .filter(e -> !e.equals(value.toString()))
-                .collect(CustomCollectors.toConcatenatedString(this.splitWith))
-        );
+        if (values.containsKey(fromKey.toString())) {
+            List<String> val = values.get(fromKey.toString())
+                    .stream()
+                    .filter(e -> !e.equals(value.toString()))
+                    .collect(Collectors.toList());
 
-        if (map.get(fromKey.toString()).isEmpty())
-            map.remove(fromKey.toString());
+            values.put(fromKey.toString(), val);
+
+            if (map.get(fromKey.toString()).isEmpty())
+                map.remove(fromKey.toString());
+
+            write();
+        }
 
         return this;
     }
@@ -167,7 +172,7 @@ public class PropertiesMapper {
         return values.size();
     }
 
-    public Set<Map.Entry<String, ArrayList<String>>> entrySet() {
+    public Set<Map.Entry<String, List<String>>> entrySet() {
         return values.entrySet();
     }
 
