@@ -1,5 +1,7 @@
 package de.kaleidox.dangobot.bot.specific;
 
+import de.kaleidox.dangobot.DangoBot;
+import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
@@ -10,12 +12,18 @@ import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -145,5 +153,24 @@ public class DangoProcessor {
         actions.removeKey(level);
 
         actions.write();
+    }
+
+    public void sendScoreboard(ServerTextChannel stc) {
+        HashMap<Integer, ArrayList<User>> resultList = new HashMap<>();
+
+        rankings.getValues()
+                .forEach((key, values) -> {
+                    int level = Integer.parseInt(values.get(0));
+                    User user = Main.API.getUserById(key).join();
+
+                    if (resultList.containsKey(level)) {
+                        resultList.get(level).add(user);
+                    } else {
+                        ArrayList<User> list = new ArrayList<>();
+                        list.add(user);
+                        resultList.put(level, list);
+                    }
+                });
+        // todo THIS FFS
     }
 }
