@@ -26,6 +26,7 @@ public class Main {
     public static DiscordBotListAPI DBLAPI;
     public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
     private static Debugger log = new Debugger(Main.class.getName());
+    private static Debugger chat = new Debugger("Chat");
 
     public static void main(String args[]) {
         Mapper.packMaps();
@@ -45,12 +46,12 @@ public class Main {
 
                     //// Cosmetics
                     api.updateUsername(DangoBot.BOT_NAME);
-
                     try {
                         api.updateAvatar(new URL(DangoBot.ICON_URL));
                     } catch (MalformedURLException e) {
                         log.put("Failed to Update the Avatar");
                     }
+                    api.addMessageCreateListener(chat::print);
 
                     //// Actual Bot Part
                     api.addMessageCreateListener(event -> {

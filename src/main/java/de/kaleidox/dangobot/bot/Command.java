@@ -28,8 +28,28 @@ import java.util.function.Consumer;
 
 public enum Command {
     // Enum Stuff
-    HELP("help", true, false, new int[]{0, 0}, msg -> {
-        msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.HELP.getEmbed()));
+    HELP("help", true, false, new int[]{0, 1}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+
+        List<String> param = extractParam(msg);
+
+        if (param.size() == 0) {
+            stc.sendMessage(HelpLibrary.HELP.getEmbed());
+        } else {
+            Optional<Command> fromKeyword = Command.findFromKeyword(param.get(0));
+
+            if (fromKeyword.isPresent()) {
+                stc.sendMessage(HelpLibrary.getHelp(fromKeyword.get()).map(HelpLibrary::getEmbed).orElse(DangoBot.getBasicEmbed()
+                        .addField("No Help found!", "No help found.")
+                ));
+            } else {
+                stc.sendMessage(DangoBot.getBasicEmbed()
+                        .addField("No Help found!", "No help found.")
+                );
+            }
+        }
     }),
     INFO("info", true, false, new int[]{0, 0}, msg -> {
         msg.getServerTextChannel().ifPresent(event -> event.sendMessage(EmbedLibrary.INFO.getEmbed()));
@@ -249,7 +269,6 @@ public enum Command {
             chl.asServerTextChannel().ifPresent(stc -> {
                 if (usr.isBotOwner()) {
                     DangoProcessor.softGet(srv);
-                    Debugger.print(Auth.softGet(srv).auths.entrySet());
                 }
             });
         }

@@ -2,6 +2,7 @@ package de.kaleidox.dangobot.util;
 
 import de.kaleidox.dangobot.DangoBot;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -22,10 +23,6 @@ public class Debugger {
         this.title = title;
         this.subclass = subclass;
         isSubclass = true;
-    }
-
-    public static void print(Object d) {
-        System.out.println(d);
     }
 
     public void speak() {
@@ -113,5 +110,9 @@ public class Debugger {
 
     private void putTime() {
         sb.append(getTime());
+    }
+
+    public void print(MessageCreateEvent messageCreateEvent) {
+        print(messageCreateEvent.getMessage());
     }
 }
