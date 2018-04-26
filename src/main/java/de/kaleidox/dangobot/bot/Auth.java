@@ -6,6 +6,7 @@ import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
+import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.PermissionType;
@@ -13,15 +14,19 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
 import java.io.File;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static de.kaleidox.dangobot.util.SuccessState.NOT_RUN;
+import static de.kaleidox.dangobot.util.SuccessState.SUCCESSFUL;
+import static de.kaleidox.dangobot.util.SuccessState.UNSUCCESSFUL;
 
 public class Auth {
     private static final ConcurrentHashMap<Long, Auth> selfMap = new ConcurrentHashMap<>();
+    public PropertiesMapper auths = new PropertiesMapper(new File("props/authUsers.properties"), ';');
     private Debugger log = new Debugger(Auth.class.getName());
     private Server myServer;
     private Long serverId;
-    private PropertiesMapper auths = new PropertiesMapper(new File("props/authUsers.properties"), ';');
 
     private Auth(Server server) {
         this.myServer = server;
@@ -69,60 +74,61 @@ public class Auth {
         return val;
     }
 
-    public CompletableFuture<SuccessState> addAuth(User user) {
-        CompletableFuture<SuccessState> val = new CompletableFuture<>();
+    public SuccessState addAuth(User user) {
+        SuccessState val = SuccessState.NOT_RUN;
 
         auths.add(serverId.toString(), user.getIdAsString()).write();
-        val.complete(SuccessState.SUCCESSFUL);
+        val = SUCCESSFUL;
 
         log.put("Added Auth for " + myServer.getName());
 
+        auths.write();
+
         return val;
     }
 
-    public CompletableFuture<SuccessState> removeAuth(User user) {
-        CompletableFuture<SuccessState> val = new CompletableFuture<>();
+    public SuccessState removeAuth(User user) {
+        SuccessState val;
 
         if (auths.containsValue(myServer.getIdAsString(), user.getIdAsString())) {
-            auths.removeValue(serverId.toString(), user.getIdAsString()).write();
-            val.complete(SuccessState.SUCCESSFUL);
+            auths.removeValue(serverId.toString(), user.getIdAsString());
+            val = SUCCESSFUL;
 
             log.put("Removed Auth for " + myServer.getName());
         } else {
-            val.complete(SuccessState.UNSUCCESSFUL);
+            val = UNSUCCESSFUL;
         }
+
+        auths.write();
 
         return val;
     }
 
-    public CompletableFuture<SuccessState> sendEmbed(ServerTextChannel chl) {
-        CompletableFuture<SuccessState> val = new CompletableFuture<>();
+    public SuccessState sendEmbed(ServerTextChannel chl) {
+        AtomicReference<SuccessState> val = new AtomicReference<>();
         EmbedBuilder eb = DangoBot.getBasicEmbed();
         User usr;
+        SelectedPropertiesMapper select = auths.select(serverId);
+
+        val.set(NOT_RUN);
 
         eb.setTitle(DangoBot.BOT_NAME + " - **Authed Users on __" + myServer.getName() + "__:**");
         eb.setDescription("_Administrators and User with Permission \"Manage Server\" are Authed by Default._");
 
-        if (auths.containsKey(myServer.getIdAsString())) {
-            if (auths.size(myServer.getIdAsString()) != 0) {
-                for (String x : auths.getAll(myServer.getIdAsString())) {
-                    usr = Main.API.getUserById(x).join();
+        if (select.size() != 0) {
+            for (String x : select.getAll()) {
+                usr = Main.API.getUserById(x).join();
 
-                    eb.addField(usr.getName(), usr.getMentionTag(), true);
-                }
-
-                chl.sendMessage(eb).thenRun(() -> val.complete(SuccessState.SUCCESSFUL));
-            } else {
-                eb.addField("No Auths.", "There are no Auths for this Server.", false);
-
-                chl.sendMessage(eb).thenRun(() -> val.complete(SuccessState.UNSUCCESSFUL));
+                eb.addField(usr.getName(), usr.getMentionTag(), true);
             }
+
+            chl.sendMessage(eb).thenRun(() -> val.set(SUCCESSFUL));
         } else {
             eb.addField("No Auths.", "There are no Auths for this Server.", false);
 
-            chl.sendMessage(eb).thenRun(() -> val.complete(SuccessState.UNSUCCESSFUL));
+            chl.sendMessage(eb).thenRun(() -> val.set(UNSUCCESSFUL));
         }
 
-        return val;
+        return val.get();
     }
 }

@@ -92,10 +92,14 @@ public enum Command {
         } else if (param.size() == 1) {
             List<CustomEmoji> customEmojis = msg.getCustomEmojis();
 
-            if (customEmojis.size() == 1) {
-                dangoProcessor.setEmoji(new Emoji(customEmojis.get(0)));
-            } else if (customEmojis.size() == 0) {
-                dangoProcessor.setEmoji(new Emoji(param.get(0)));
+            try {
+                if (customEmojis.size() == 1) {
+                    dangoProcessor.setEmoji(new Emoji(customEmojis.get(0)));
+                } else if (customEmojis.size() == 0) {
+                    dangoProcessor.setEmoji(new Emoji(param.get(0)));
+                }
+            } catch (StringIndexOutOfBoundsException e) {
+                SuccessState.ERRORED.withMessage("That Emoji is not from this Server. You must specify an emoji from this Server.").evaluateForMessage(msg);
             }
         } else {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.").evaluateForMessage(msg);
@@ -116,7 +120,7 @@ public enum Command {
             StringBuilder field = new StringBuilder();
 
             if (!actions.entrySet().isEmpty()) {
-                for (Map.Entry<String, ArrayList<String>> entry : actions.entrySet()) {
+                for (Map.Entry<String, List<String>> entry : actions.entrySet()) {
                     for (List<String> that : Utils.everyOfList(2, entry.getValue())) {
                         Optional<Role> roleById = Main.API.getRoleById(that.get(1));
 
@@ -197,30 +201,43 @@ public enum Command {
         } else {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.",
                     "The correct use is:\n" +
-                    "`dango action <Actiontitle> <Level> [Parameter]` or `dango action delete <Level> <Actiontitle>`\n" +
-                    "\n" +
-                    "Examples:\n" +
-                    "`dango action applyrole 6 @Regular` - Applies the role @Regular for the 6th level.\n" +
-                    "`dango action delete 4 ` - Removes the REMOVEROLE Action from Level 4").evaluateForMessage(msg);
+                            "`dango action <Actiontitle> <Level> [Parameter]` or `dango action delete <Level> <Actiontitle>`\n" +
+                            "\n" +
+                            "Examples:\n" +
+                            "`dango action applyrole 6 @Regular` - Applies the role @Regular for the 6th level.\n" +
+                            "`dango action delete 4 ` - Removes the REMOVEROLE Action from Level 4").evaluateForMessage(msg);
         }
     }),
 
-    ADD_AUTH("auth", false, true, new int[]{1, 1}, msg -> {
+    ADD_AUTH("auth", false, true, new int[]{1, 10}, msg -> {
         Server srv = msg.getServer().get();
-        User usr = msg.getUserAuthor().get();
+        List<User> mentionedUsers = msg.getMentionedUsers();
+        Auth auth = Auth.softGet(srv);
 
-        Auth.softGet(srv).addAuth(usr).thenAccept(state -> Utils.evaluateState(msg, state));
+        if (mentionedUsers.size() < 1) {
+            SuccessState.ERRORED.withMessage("No User Mentions found.").evaluateForMessage(msg);
+        } else {
+            mentionedUsers.forEach(user -> auth.addAuth(user).evaluateForMessage(msg));
+        }
     }),
-    REMOVE_AUTH("unauth", false, true, new int[]{1, 1}, msg -> {
+    REMOVE_AUTH("unauth", false, true, new int[]{1, 10}, msg -> {
         Server srv = msg.getServer().get();
-        User usr = msg.getUserAuthor().get();
+        List<User> mentionedUsers = msg.getMentionedUsers();
+        Auth auth = Auth.softGet(srv);
 
-        Auth.softGet(srv).removeAuth(usr).thenAccept(state -> Utils.evaluateState(msg, state));
+        if (mentionedUsers.size() < 1) {
+            SuccessState.ERRORED.withMessage("No User Mentions found.").evaluateForMessage(msg);
+        } else {
+            mentionedUsers.forEach(user -> auth.removeAuth(user).evaluateForMessage(msg));
+        }
     }),
     AUTHS("auths", false, true, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
+        Auth auth = Auth.softGet(srv);
 
-        msg.getServerTextChannel().ifPresent(chl -> Auth.softGet(srv).sendEmbed(chl).thenAccept(state -> Utils.evaluateState(msg, state)));
+        msg.getServerTextChannel().ifPresent(chl -> {
+            auth.sendEmbed(chl).evaluateForMessage(msg);
+        });
     }),
 
     TESTCOMMAND("testcommand", false, true, new int[]{0, 0}, msg -> {
@@ -232,6 +249,7 @@ public enum Command {
             chl.asServerTextChannel().ifPresent(stc -> {
                 if (usr.isBotOwner()) {
                     DangoProcessor.softGet(srv);
+                    Debugger.print(Auth.softGet(srv).auths.entrySet());
                 }
             });
         }

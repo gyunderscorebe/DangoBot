@@ -1,7 +1,7 @@
 package de.kaleidox.dangobot.util;
 
 import de.kaleidox.dangobot.DangoBot;
-import de.kaleidox.dangobot.discord.ui.Respond;
+import de.kaleidox.dangobot.discord.ui.Response;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
@@ -36,13 +36,13 @@ public enum SuccessState {
                 msg.addReaction("✅");
                 break;
             case UNSUCCESSFUL:
-                Respond.addInfoReaction(msg, "❓", false, this.getMessageEmbed());
+                Response.addInfoReaction(msg, "❓", false, this.getMessageEmbed());
                 break;
             case ERRORED:
-                Respond.addInfoReaction(msg, "❌", false, this.getMessageEmbed());
+                Response.addInfoReaction(msg, "❌", false, this.getMessageEmbed());
                 break;
             case UNAUTHORIZED:
-                Respond.addInfoReaction(msg, "⛔", false, this.hasMessage ? this.getMessageEmbed() : DangoBot.getBasicEmbed()
+                Response.addInfoReaction(msg, "⛔", false, this.hasMessage ? this.getMessageEmbed() : DangoBot.getBasicEmbed()
                         .addField("You do not have access to that Command.", "If you think this is a mistake, please contact an Administrator.")
                 );
                 break;
@@ -77,9 +77,9 @@ public enum SuccessState {
         if (hasMessage && this != SUCCESSFUL)
             return baseEmbed.addField(title == null ? "There was an error:" : title, text, inline);
         else if (this == SUCCESSFUL)
-            return baseEmbed.addField("You're fine.", "Everything's fine.");
+            return baseEmbed.addField("It's fine.", "Everything's fine.");
         else
-            throw new NullPointerException("No message defined for SuccessState@" + this.hashCode() + ".");
+            return baseEmbed.addField("No message defined.", "No message defined for SuccessState#" + this.hashCode() + ".");
     }
 
     public String getMessageText() {
