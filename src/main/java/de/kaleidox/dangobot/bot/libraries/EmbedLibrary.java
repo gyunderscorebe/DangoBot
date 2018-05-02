@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.bot;
+package de.kaleidox.dangobot.bot.libraries;
 
 import de.kaleidox.dangobot.DangoBot;
 import org.javacord.api.Javacord;

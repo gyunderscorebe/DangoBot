@@ -150,10 +150,10 @@ public final class Utils {
         return val;
     }
 
-    public static <T> ArrayList<T> reverse(List<T> list) {
+    public static <T> ArrayList<T> reverseList(List<T> list) {
         ArrayList<T> val = new ArrayList<>();
 
-        for (int i = list.size()-1; i > -1; i--) {
+        for (int i = list.size() - 1; i > -1; i--) {
             val.add(list.get(i));
         }
 

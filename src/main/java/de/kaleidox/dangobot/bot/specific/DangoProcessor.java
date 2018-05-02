@@ -6,13 +6,13 @@ import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
 import de.kaleidox.dangobot.util.Mapper;
+import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
@@ -20,11 +20,14 @@ import org.javacord.api.entity.user.User;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class DangoProcessor {
@@ -155,22 +158,97 @@ public class DangoProcessor {
         actions.write();
     }
 
-    public void sendScoreboard(ServerTextChannel stc) {
-        HashMap<Integer, ArrayList<User>> resultList = new HashMap<>();
+    public SuccessState sendScoreboard(ServerTextChannel stc) {
+        TreeMap<Integer, ArrayList<User>> resultList = new TreeMap<>();
+        SuccessState val = SuccessState.NOT_RUN;
+        Server srv = stc.getServer();
 
-        rankings.getValues()
-                .forEach((key, values) -> {
-                    int level = Integer.parseInt(values.get(0));
-                    User user = Main.API.getUserById(key).join();
+        for (Map.Entry<String, List<String>> entry : rankings.getValues().entrySet()) {
+            String key = entry.getKey();
+            List<String> value = entry.getValue();
+            int thisLevel = Integer.parseInt(value.get(0));
 
-                    if (resultList.containsKey(level)) {
-                        resultList.get(level).add(user);
-                    } else {
-                        ArrayList<User> list = new ArrayList<>();
-                        list.add(user);
-                        resultList.put(level, list);
+            try {
+                log.put("Find user: [" + key + "]", true);
+
+                User user = Main.API
+                        .getUserById(key)
+                        .get(10, TimeUnit.SECONDS);
+
+                if (resultList.containsKey(thisLevel)) {
+                    resultList.get(thisLevel).add(user);
+                } else {
+                    ArrayList<User> newList = new ArrayList<>();
+
+                    newList.add(user);
+                    resultList.put(thisLevel, newList);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                log.put(e.getMessage());
+
+                val = SuccessState.ERRORED.withMessage("There was an error finding the User [" + key + "].\n" +
+                        "Please Contact the bot author " + DangoBot.OWNER_TAG + ".");
+            } catch (TimeoutException e) {
+                log.put("Could not find User by ID: " + key);
+
+                val = SuccessState.ERRORED.withMessage("Could not find User by ID [" + key + "] within the timeout.");
+            }
+        }
+
+        AtomicInteger maxRuntime = new AtomicInteger(resultList.size());
+        AtomicInteger lastKey = new AtomicInteger(-1);
+        StringBuilder message = new StringBuilder();
+
+        message
+                .append(emoji.getPrintable())
+                .append(emoji.getPrintable())
+                .append("\t")
+                .append("__")
+                .append("**Scores for ")
+                .append(srv.getName())
+                .append(":**")
+                .append("__")
+                .append("\t")
+                .append(emoji.getPrintable())
+                .append(emoji.getPrintable())
+                .append("\n")
+                .append("\n");
+
+        resultList.descendingMap()
+                .forEach((level, users) -> {
+                    if (lastKey.get() == -1 || lastKey.get() > level) {
+                        lastKey.set(level);
+                    }
+
+                    if (lastKey.get() == level) {
+                        message.append("**")
+                                .append(level)
+                                .append("**: ");
+                    }
+
+                    users.forEach(user -> {
+                        message.append(user.getNickname(srv)
+                                .orElseGet(user::getName)
+                        )
+                                .append(", ");
+                    });
+
+                    message.reverse()
+                            .delete(1, 2)
+                            .reverse()
+                            .append("\n");
+
+                    if (maxRuntime.decrementAndGet() == 0) {
+                        stc.sendMessage(message.toString());
                     }
                 });
-        // todo THIS FFS
+
+        return val;
+    }
+
+    public void sendUserScore(ServerTextChannel stc, User usr) {
+        stc.sendMessage(DangoBot.getBasicEmbed()
+                .addField(usr.getNickname(stc.getServer()).orElseGet(usr::getName) + "'s Score:", rankings.softGet(usr.getId(), 0, 0))
+        );
     }
 }

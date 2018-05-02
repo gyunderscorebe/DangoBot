@@ -2,6 +2,8 @@ package de.kaleidox.dangobot.bot;
 
 import de.kaleidox.dangobot.DangoBot;
 import de.kaleidox.dangobot.Main;
+import de.kaleidox.dangobot.bot.libraries.EmbedLibrary;
+import de.kaleidox.dangobot.bot.libraries.HelpLibrary;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
@@ -85,14 +87,41 @@ public enum Command {
         });
     }),
 
+    SELF_STATS(new String[]{"self", "own", "my", "mine"}, false, false, new int[]{0, 0}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+
+        dangoProcessor.sendUserScore(stc, usr);
+    }),
     SCOREBOARD(new String[]{"stats", "scores", "scoreboard"}, false, false, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
 
-        dangoProcessor.sendScoreboard(stc);
-        msg.delete("Done");
+        dangoProcessor.sendScoreboard(stc)
+                .evaluateForMessage(msg);
+    }),
+
+    GIVE(new String[]{"give", "add"}, false, true, new int[]{2, 2}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+    }),
+    TAKE(new String[]{"take", "remove"}, false, true, new int[]{2, 2}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+    }),
+    REVOKE("revoke", false, true, new int[]{0, 0}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
     }),
 
     COUNT_INTERACTION(new String[]{"count", "per", "every"}, false, true, new int[]{0, 1}, msg -> {
@@ -113,6 +142,10 @@ public enum Command {
                 if (val <= Integer.MAX_VALUE && val >= 25) {
                     dangoProcessor.setCounterMax(Integer.parseInt(param.get(0)));
                     SuccessState.SUCCESSFUL.evaluateForMessage(msg);
+
+                    stc.sendMessage(DangoBot.getBasicEmbed()
+                            .addField("New Counter:", String.valueOf(dangoProcessor.getCounterMax()))
+                    );
                 } else if (val < 25) {
                     SuccessState.ERRORED.withMessage("The given Number is too small, needs to be greater than 25.").evaluateForMessage(msg);
                 } else {
@@ -143,8 +176,14 @@ public enum Command {
                 } else if (customEmojis.size() == 0) {
                     dangoProcessor.setEmoji(new Emoji(param.get(0)));
                 }
-            } catch (StringIndexOutOfBoundsException e) {
+            } catch (NullPointerException e) {
                 SuccessState.ERRORED.withMessage("That Emoji is not from this Server. You must specify an emoji from this Server.").evaluateForMessage(msg);
+            } finally {
+                SuccessState.SUCCESSFUL.evaluateForMessage(msg);
+
+                stc.sendMessage(DangoBot.getBasicEmbed()
+                        .addField("New Emoji:", dangoProcessor.getEmoji().getPrintable())
+                );
             }
         } else {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.").evaluateForMessage(msg);
@@ -359,7 +398,9 @@ public enum Command {
                         if (!cmd.requiresAuth || auth.isAuth(usr)) {
                             satisfier++;
                             log.put("Auth OK", true);
-                        } else val = SuccessState.UNAUTHORIZED;
+                        } else {
+                            SuccessState.UNAUTHORIZED.evaluateForMessage(msg);
+                        }
 
                         log.put("Satisfier: " + satisfier, true);
                         if (satisfier == 2) {

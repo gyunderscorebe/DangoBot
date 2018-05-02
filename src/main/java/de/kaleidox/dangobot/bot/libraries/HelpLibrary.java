@@ -1,6 +1,7 @@
-package de.kaleidox.dangobot.bot;
+package de.kaleidox.dangobot.bot.libraries;
 
 import de.kaleidox.dangobot.DangoBot;
+import de.kaleidox.dangobot.bot.Command;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import java.util.Arrays;

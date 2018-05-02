@@ -43,6 +43,7 @@ public class Main {
                 .thenAccept(api -> {
                     Main.API = api;
                     StatusScroll status = new StatusScroll(api);
+                    DBLAPI.setStats(API.getYourself().getIdAsString(), API.getServers().size());
 
                     //// Cosmetics
                     api.updateUsername(DangoBot.BOT_NAME);

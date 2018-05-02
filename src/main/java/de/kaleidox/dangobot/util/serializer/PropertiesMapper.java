@@ -191,7 +191,7 @@ public class PropertiesMapper {
         ioPort.write(map);
     }
 
-    public ConcurrentHashMap<String,String> getMap() {
+    public ConcurrentHashMap<String, String> getMap() {
         return map;
     }
 
