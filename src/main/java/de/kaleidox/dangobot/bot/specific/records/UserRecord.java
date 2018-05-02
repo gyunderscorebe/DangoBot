@@ -1,9 +1,11 @@
-package de.kaleidox.dangobot.bot.specific;
+package de.kaleidox.dangobot.bot.specific.records;
 
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
+import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,22 +17,26 @@ public class UserRecord {
     private Server myServer;
     private Long serverId;
     private PropertiesMapper values;
+    public static ConcurrentHashMap<User, UserEntry> userEntries = new ConcurrentHashMap<>();
 
     private UserRecord(Server server) {
         this.myServer = server;
 
         serverId = myServer.getId();
 
-        File records = new File("props/userRecords/" + serverId + ".properties");
+        File folder = new File("props/userRecords/" + serverId + "/");
+        folder.mkdirs();
 
-        if (!records.exists()) {
+        File main = new File("props/userRecords/" + serverId + "/default.properties");
+
+        if (!main.exists()) {
             try {
-                records.createNewFile();
+                main.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        this.values = new PropertiesMapper(records, ';');
+        this.values = new PropertiesMapper(main, ';');
 
         Utils.safePut(selfMap, server, this);
     }
@@ -43,6 +49,9 @@ public class UserRecord {
      */
     public static UserRecord softGet(Server server) {
         return (selfMap.containsKey(server) ? selfMap.get(server) : selfMap.put(server, new UserRecord(server)));
+    }
+
+    public void newMessage(MessageCreateEvent event) {
     }
 
     // TODO Scheduled to a later release

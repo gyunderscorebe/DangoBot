@@ -3,6 +3,7 @@ package de.kaleidox.dangobot;
 import de.kaleidox.dangobot.bot.Command;
 import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
+import de.kaleidox.dangobot.bot.specific.records.UserRecord;
 import de.kaleidox.dangobot.util.Debugger;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
@@ -48,6 +49,14 @@ public class Main {
                         log.put("Failed to Update the Avatar");
                     }
                     api.addMessageCreateListener(chat::print);
+
+                    api.addMessageCreateListener(event -> {
+                        event.getServer().ifPresent(server -> {
+                            if (server.getId() != 264445053596991498L) {
+                                UserRecord.softGet(server).newMessage(event);
+                            }
+                        });
+                    });
 
                     //// Actual Bot Part
                     api.addMessageCreateListener(event -> {
