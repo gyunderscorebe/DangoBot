@@ -258,8 +258,10 @@ public class DangoProcessor {
 
         AtomicInteger maxRuntime = new AtomicInteger(resultList.size());
         AtomicInteger lastKey = new AtomicInteger(-1);
-        AtomicInteger place = new AtomicInteger(1);
+        AtomicInteger place = new AtomicInteger(0);
         StringBuilder message = new StringBuilder();
+
+        // TODO total dangos
 
         message
                 .append(emoji.getPrintable())
@@ -281,6 +283,7 @@ public class DangoProcessor {
                     .forEach((level, users) -> {
                         if (lastKey.get() == -1 || lastKey.get() > level) {
                             lastKey.set(level);
+                            place.incrementAndGet();
                         }
 
                         if (lastKey.get() == level) {

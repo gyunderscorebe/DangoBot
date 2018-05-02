@@ -13,11 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UserRecord {
     private static final ConcurrentHashMap<Server, UserRecord> selfMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<User, UserEntry> userEntries = new ConcurrentHashMap<>();
     private Debugger log = new Debugger(UserRecord.class.getName());
     private Server myServer;
     private Long serverId;
     private PropertiesMapper values;
-    public static ConcurrentHashMap<User, UserEntry> userEntries = new ConcurrentHashMap<>();
 
     private UserRecord(Server server) {
         this.myServer = server;

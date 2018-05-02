@@ -98,7 +98,7 @@ public enum Command {
 
         dangoProcessor.sendUserScore(stc, usr);
     }),
-    SCOREBOARD(new String[]{"stats", "scores", "scoreboard"}, false, false, new int[]{0, 0}, msg -> {
+    SCOREBOARD(new String[]{"stats", "scores", "score", "scoreboard"}, false, false, new int[]{0, 0}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
