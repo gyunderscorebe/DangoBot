@@ -4,7 +4,6 @@ import de.kaleidox.dangobot.bot.Command;
 import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.Mapper;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -24,14 +23,10 @@ public class Main {
     public final static ConcurrentHashMap<File, ConcurrentHashMap<String, String>> MAPS = new ConcurrentHashMap<>();
     public static DiscordApi API;
     public static DiscordBotListAPI DBLAPI;
-    public static ConcurrentHashMap<String, String> authUsersMap = new ConcurrentHashMap<>();
     private static Debugger log = new Debugger(Main.class.getName());
     private static Debugger chat = new Debugger("Chat");
 
     public static void main(String args[]) {
-        Mapper.packMaps();
-        Mapper.loadMaps();
-
         DBLAPI = new DiscordBotListAPI
                 .Builder()
                 .token(DangoBot.DBL_BOT_TOKEN)

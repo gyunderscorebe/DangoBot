@@ -3,8 +3,8 @@ package de.kaleidox.dangobot.bot;
 import de.kaleidox.dangobot.DangoBot;
 import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.SuccessState;
+import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -33,7 +33,7 @@ public class Auth {
 
         serverId = myServer.getId();
 
-        Mapper.safePut(selfMap, serverId, this);
+        Utils.safePut(selfMap, serverId, this);
     }
 
     /*

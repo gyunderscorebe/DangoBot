@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
@@ -158,5 +159,12 @@ public final class Utils {
         }
 
         return val;
+    }
+
+    public static <K, V> V safePut(ConcurrentHashMap<K, V> map, K key, V value) {
+        if (!map.containsKey(key))
+            return map.put(key, value);
+        else
+            return map.replace(key, value);
     }
 }

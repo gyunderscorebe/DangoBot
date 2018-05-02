@@ -5,7 +5,6 @@ import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
-import de.kaleidox.dangobot.util.Mapper;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
@@ -16,6 +15,7 @@ import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class DangoProcessor {
     private static final ConcurrentHashMap<Long, DangoProcessor> selfMap = new ConcurrentHashMap<>();
@@ -40,7 +39,7 @@ public class DangoProcessor {
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
     private Emoji emoji;
-    private AtomicReference<User> lastDango = new AtomicReference<>();
+    private ConcurrentHashMap<Class, Object> lastDango = new ConcurrentHashMap<>();
 
     private DangoProcessor(Server server) {
         this.myServer = server;
@@ -77,7 +76,7 @@ public class DangoProcessor {
 
         log = new Debugger(DangoProcessor.class.getName(), server.getName());
 
-        Mapper.safePut(selfMap, serverId, this);
+        Utils.safePut(selfMap, serverId, this);
     }
 
     /*
@@ -108,10 +107,72 @@ public class DangoProcessor {
     }
 
     public void giveDango(User user, ServerTextChannel inChannel) {
-        rankings.set(user.getId(), 0, Integer.parseInt(rankings.softGet(user.getId(), 0, 0)) + 1);
+        giveDango(user, inChannel, 1);
+    }
+
+    public void giveDango(User user, ServerTextChannel inChannel, int amount) {
+        rankings.set(user.getId(), 0, Integer.parseInt(rankings.softGet(user.getId(), 0, 0)) + amount);
         rankings.write();
 
-        inChannel.sendMessage(emoji.getPrintable()).thenRun(() -> counter = 0);
+        inChannel.sendMessage(emoji.getPrintable()).thenAccept(msg -> {
+            counter = 0;
+
+            int newLevel = Integer.parseInt(rankings.get(user.getId(), 0));
+
+            Utils.everyOfList(2, actions.getAll(newLevel))
+                    .forEach(action -> {
+                        switch (action.get(0)) {
+                            case "applyrole":
+                                Main.API.getRoleById(action.get(1))
+                                        .ifPresent(user::addRole);
+
+                                SuccessState.SUCCESSFUL
+                                        .evaluateForMessage(msg);
+                                break;
+                            case "removerole":
+                                Main.API.getRoleById(action.get(1))
+                                        .ifPresent(user::removeRole);
+
+                                SuccessState.SUCCESSFUL
+                                        .evaluateForMessage(msg);
+                                break;
+                            default:
+                                SuccessState.UNSUCCESSFUL
+                                        .withMessage("Unknown LevelUp-Action: " + action.get(0))
+                                        .evaluateForMessage(msg);
+                                break;
+                        }
+                    });
+
+            lastDango.put(User.class, user);
+            lastDango.put(ServerTextChannel.class, inChannel);
+            lastDango.put(Message.class, msg);
+        });
+    }
+
+    public void removeDango(User user, ServerTextChannel inChannel, int amount) {
+        int currentDangos = Integer.parseInt(rankings.softGet(user.getId(), 0, 0));
+
+        if (currentDangos != 0) {
+            rankings.set(user.getId(), 0, currentDangos - amount);
+            rankings.write();
+        }
+
+        inChannel.sendMessage("Dango Removed from User: " + user
+                .getNickname(inChannel.getServer()).orElseGet(user::getName))
+                .thenAccept(msg -> {
+                    // nothing to see here
+                }).exceptionally(ExceptionLogger.get());
+    }
+
+    public void revokeDango() {
+        if (!lastDango.isEmpty()) {
+            User usr = (User) lastDango.get(User.class);
+            ServerTextChannel stc = (ServerTextChannel) lastDango.get(ServerTextChannel.class);
+            Message msg = (Message) lastDango.get(Message.class);
+
+            removeDango(usr, stc, 1);
+        }
     }
 
     public int getCounterMax() {
@@ -197,6 +258,7 @@ public class DangoProcessor {
 
         AtomicInteger maxRuntime = new AtomicInteger(resultList.size());
         AtomicInteger lastKey = new AtomicInteger(-1);
+        AtomicInteger place = new AtomicInteger(1);
         StringBuilder message = new StringBuilder();
 
         message
@@ -214,34 +276,47 @@ public class DangoProcessor {
                 .append("\n")
                 .append("\n");
 
-        resultList.descendingMap()
-                .forEach((level, users) -> {
-                    if (lastKey.get() == -1 || lastKey.get() > level) {
-                        lastKey.set(level);
-                    }
+        if (resultList.size() != 0) {
+            resultList.descendingMap()
+                    .forEach((level, users) -> {
+                        if (lastKey.get() == -1 || lastKey.get() > level) {
+                            lastKey.set(level);
+                        }
 
-                    if (lastKey.get() == level) {
-                        message.append("**")
-                                .append(level)
-                                .append("**: ");
-                    }
+                        if (lastKey.get() == level) {
+                            message.append("**`")
+                                    .append(place)
+                                    .append(":` ")
+                                    .append(level)
+                                    .append("x ")
+                                    .append(emoji.getPrintable())
+                                    .append("**: ");
+                        }
 
-                    users.forEach(user -> {
-                        message.append(user.getNickname(srv)
-                                .orElseGet(user::getName)
-                        )
-                                .append(", ");
+                        users.forEach(user -> {
+                            message.append(user.getNickname(srv)
+                                    .orElseGet(user::getName)
+                            )
+                                    .append(", ");
+                        });
+
+                        message.reverse()
+                                .delete(1, 2)
+                                .reverse()
+                                .append("\n");
+
+                        if (maxRuntime.decrementAndGet() == 0) {
+                            stc.sendMessage(message.toString());
+                        }
                     });
+        } else {
+            message.append("**Oops!**")
+                    .append("\n")
+                    .append("\n")
+                    .append("There are no Scores for this Server, get the chatter going!");
 
-                    message.reverse()
-                            .delete(1, 2)
-                            .reverse()
-                            .append("\n");
-
-                    if (maxRuntime.decrementAndGet() == 0) {
-                        stc.sendMessage(message.toString());
-                    }
-                });
+            stc.sendMessage(message.toString());
+        }
 
         return val;
     }
@@ -250,5 +325,11 @@ public class DangoProcessor {
         stc.sendMessage(DangoBot.getBasicEmbed()
                 .addField(usr.getNickname(stc.getServer()).orElseGet(usr::getName) + "'s Score:", rankings.softGet(usr.getId(), 0, 0))
         );
+    }
+
+    public void clearAll() {
+        rankings.clearAll();
+
+        rankings.write();
     }
 }

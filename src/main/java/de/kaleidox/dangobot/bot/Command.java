@@ -5,11 +5,14 @@ import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.bot.libraries.EmbedLibrary;
 import de.kaleidox.dangobot.bot.libraries.HelpLibrary;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
+import de.kaleidox.dangobot.discord.ui.Response;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
+import de.kaleidox.dangobot.util.ServerPreferences;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
+import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.emoji.CustomEmoji;
@@ -19,6 +22,7 @@ import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public enum Command {
@@ -105,23 +110,127 @@ public enum Command {
                 .evaluateForMessage(msg);
     }),
 
-    GIVE(new String[]{"give", "add"}, false, true, new int[]{2, 2}, msg -> {
+    GIVE(new String[]{"give", "add"}, false, true, new int[]{1, 2}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+        List<User> mentionedUsers = msg.getMentionedUsers();
+        List<String> param = extractParam(msg);
+
+        if (mentionedUsers.size() == 1) {
+            User user = mentionedUsers.get(0);
+
+            if (param.size() == 2) {
+                String s = param.get(1);
+
+                if (s.matches("[0-9]+")) {
+                    int i = Integer.parseInt(s);
+                    dangoProcessor.giveDango(user, stc, i);
+                    dangoProcessor.sendUserScore(stc, user);
+
+                    SuccessState.SUCCESSFUL
+                            .evaluateForMessage(msg);
+                } else {
+                    dangoProcessor.giveDango(user, stc);
+                    dangoProcessor.sendUserScore(stc, user);
+
+                    SuccessState.SUCCESSFUL
+                            .withMessage("You did not specify a valid number, so " + user.getNickname(srv).orElseGet(user::getName) + " got 1 Dango.")
+                            .evaluateForMessage(msg);
+                }
+            } else {
+                dangoProcessor.giveDango(user, stc);
+                dangoProcessor.sendUserScore(stc, user);
+
+                SuccessState.SUCCESSFUL
+                        .withMessage("You did not specify a number, so " + user.getNickname(srv).orElseGet(user::getName) + " got 1 Dango.")
+                        .evaluateForMessage(msg);
+            }
+        } else {
+            SuccessState.ERRORED
+                    .withMessage("No user found", "You didn't mention an User!")
+                    .evaluateForMessage(msg);
+        }
     }),
-    TAKE(new String[]{"take", "remove"}, false, true, new int[]{2, 2}, msg -> {
+    TAKE(new String[]{"take", "remove"}, false, true, new int[]{1, 2}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+        List<User> mentionedUsers = msg.getMentionedUsers();
+        List<String> param = extractParam(msg);
+
+        if (mentionedUsers.size() == 1) {
+            User user = mentionedUsers.get(0);
+
+            if (param.size() == 2) {
+                String s = param.get(1);
+
+                if (s.matches("[0-9]+")) {
+                    int i = Integer.parseInt(s);
+                    dangoProcessor.removeDango(user, stc, i);
+                    dangoProcessor.sendUserScore(stc, user);
+
+                    SuccessState.SUCCESSFUL
+                            .evaluateForMessage(msg);
+                } else {
+                    dangoProcessor.removeDango(user, stc, 1);
+                    dangoProcessor.sendUserScore(stc, user);
+
+                    SuccessState.SUCCESSFUL
+                            .withMessage("You did not specify a valid number, so " + user.getNickname(srv).orElseGet(user::getName) + " lost 1 Dango.")
+                            .evaluateForMessage(msg);
+                }
+            } else {
+                dangoProcessor.removeDango(user, stc, 1);
+                dangoProcessor.sendUserScore(stc, user);
+
+                SuccessState.SUCCESSFUL
+                        .withMessage("You did not specify a number, so " + user.getNickname(srv).orElseGet(user::getName) + " lost 1 Dango.")
+                        .evaluateForMessage(msg);
+            }
+        } else {
+            SuccessState.ERRORED
+                    .withMessage("No user found", "You didn't mention an User!")
+                    .evaluateForMessage(msg);
+        }
     }),
-    REVOKE("revoke", false, true, new int[]{0, 0}, msg -> {
+    REVOKE("revoke", false, true, new int[]{0, 1}, msg -> {
         Server srv = msg.getServer().get();
         User usr = msg.getUserAuthor().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+        List<String> param = extractParam(msg);
+
+        if (param.size() == 1) {
+            if (Boolean.valueOf(param.get(0))) {
+                dangoProcessor.revokeDango();
+            }
+        } else {
+            Response.areYouSure(stc, usr, "Are you sure?", "Do you really want to revoke the last Dango?", 30, TimeUnit.SECONDS)
+                    .thenAcceptAsync(yesno -> {
+                        if (yesno) {
+                            dangoProcessor.revokeDango();
+
+                            SuccessState.SUCCESSFUL
+                                    .evaluateForMessage(msg);
+                        }
+                    });
+        }
+    }),
+    CLEAR(new String[]{"reset", "clear"}, false, true, new int[]{0, 0}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+
+        Response.areYouSure(stc, usr, "Are you sure?", "Do you really want to reset this server's scores?", 30, TimeUnit.SECONDS)
+                .thenAcceptAsync(yesno -> {
+                    if (yesno) {
+                        dangoProcessor.clearAll();
+                    }
+                });
     }),
 
     COUNT_INTERACTION(new String[]{"count", "per", "every"}, false, true, new int[]{0, 1}, msg -> {
@@ -234,53 +343,63 @@ public enum Command {
 
             stc.sendMessage(embed);
         } else if (param.size() >= 2 && param.size() <= 3) {
-            int level = Integer.parseInt(param.get(1));
-            List<Role> mentionedRoles = msg.getMentionedRoles();
-            Role role;
-            Optional<Role> roleOpt = mentionedRoles.stream()
-                    .limit(1)
-                    .findAny();
+            if (param.get(1).matches("[0-9]+")) {
+                int level = Integer.parseInt(param.get(1));
+                List<Role> mentionedRoles = msg.getMentionedRoles();
+                Role role;
+                Optional<Role> roleOpt = mentionedRoles.stream()
+                        .limit(1)
+                        .findAny();
 
-            switch (param.get(0)) {
-                case "applyrole":
-                    if (roleOpt.isPresent()) {
-                        role = roleOpt.get();
+                switch (param.get(0)) {
+                    case "applyrole":
+                        if (roleOpt.isPresent()) {
+                            role = roleOpt.get();
 
-                        if (actions.mapSize() < 25 && !actions.containsValue(level, role.getId())) {
-                            dangoProcessor.addRoleAction(level, "applyrole", role);
-                        } else if (!actions.containsValue(level, role.getId())) {
-                            SuccessState.ERRORED.withMessage("There is already an Action with this Role!").evaluateForMessage(msg);
+                            if (actions.mapSize() < 25 && !actions.containsValue(level, role.getId())) {
+                                dangoProcessor.addRoleAction(level, "applyrole", role);
+                            } else if (!actions.containsValue(level, role.getId())) {
+                                SuccessState.ERRORED.withMessage("There is already an Action with this Role!").evaluateForMessage(msg);
+                            } else {
+                                SuccessState.ERRORED.withMessage("There are already too many Actions!").evaluateForMessage(msg);
+                            }
                         } else {
-                            SuccessState.ERRORED.withMessage("There are already too many Actions!").evaluateForMessage(msg);
+                            SuccessState.ERRORED.withMessage("No Role Found.").evaluateForMessage(msg);
                         }
-                    } else {
-                        SuccessState.ERRORED.withMessage("No Role Found.").evaluateForMessage(msg);
-                    }
 
-                    break;
-                case "removerole":
-                    if (roleOpt.isPresent()) {
-                        role = roleOpt.get();
+                        break;
+                    case "removerole":
+                        if (roleOpt.isPresent()) {
+                            role = roleOpt.get();
 
-                        if (actions.mapSize() < 25 && !actions.containsValue(level, role.getId())) {
-                            dangoProcessor.addRoleAction(level, "removerole", role);
-                        } else if (!actions.containsValue(level, role.getId())) {
-                            SuccessState.ERRORED.withMessage("There is already an Action with this Role!").evaluateForMessage(msg);
+                            if (actions.mapSize() < 25 && !actions.containsValue(level, role.getId())) {
+                                dangoProcessor.addRoleAction(level, "removerole", role);
+                            } else if (!actions.containsValue(level, role.getId())) {
+                                SuccessState.ERRORED.withMessage("There is already an Action with this Role!").evaluateForMessage(msg);
+                            } else {
+                                SuccessState.ERRORED.withMessage("There are already too many Actions!").evaluateForMessage(msg);
+                            }
                         } else {
-                            SuccessState.ERRORED.withMessage("There are already too many Actions!").evaluateForMessage(msg);
+                            SuccessState.ERRORED.withMessage("No Role Found.").evaluateForMessage(msg);
                         }
-                    } else {
-                        SuccessState.ERRORED.withMessage("No Role Found.").evaluateForMessage(msg);
-                    }
 
-                    break;
-                case "delete":
-                    if (param.size() == 3) {
-                        dangoProcessor.removeAction(level, param.get(2));
-                    } else {
-                        dangoProcessor.removeActions(level);
-                    }
-                    break;
+                        break;
+                    case "delete":
+                        if (param.size() == 3) {
+                            dangoProcessor.removeAction(level, param.get(2));
+                        } else {
+                            dangoProcessor.removeActions(level);
+                        }
+                        break;
+                }
+            } else {
+                SuccessState.ERRORED.withMessage("Too many or too few arguments, or wrong argument order.",
+                        "The correct use is:\n" +
+                                "`dango action <Actiontitle> <Level> [Parameter]` or `dango action delete <Level> <Actiontitle>`\n" +
+                                "\n" +
+                                "Examples:\n" +
+                                "`dango action applyrole 6 @Regular` - Applies the role @Regular for the 6th level.\n" +
+                                "`dango action delete 4 ` - Removes the REMOVEROLE Action from Level 4").evaluateForMessage(msg);
             }
         } else {
             SuccessState.ERRORED.withMessage("Too many or too few arguments.",
@@ -322,6 +441,38 @@ public enum Command {
         msg.getServerTextChannel().ifPresent(chl -> {
             auth.sendEmbed(chl).evaluateForMessage(msg);
         });
+    }),
+
+    PREFERENCE(new String[]{"setup", "pref", "preference"}, false, true, new int[]{0, 2}, msg -> {
+        Server srv = msg.getServer().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        List<String> param = extractParam(msg);
+        List<ServerTextChannel> mentionedChannels = msg.getMentionedChannels();
+        ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
+
+        if (param.size() == 0) {
+            // post preferences
+            EmbedBuilder basicEmbed = DangoBot.getBasicEmbed();
+
+            basicEmbed.addField("command_channel", serverPreferences.commandChannelId);
+
+            stc.sendMessage(basicEmbed);
+        } else {
+            // edit preferences
+            if (param.get(0).toLowerCase().equals("command_channel")) {
+                // edit command channel
+                if (mentionedChannels.size() == 1) {
+                    serverPreferences.setCommandChannel(stc);
+                } else {
+                    SuccessState.ERRORED
+                            .withMessage("No Channel Mentioned!");
+                }
+            } else {
+                SuccessState.ERRORED
+                        .withMessage("Unknown Variable Name!", "Possible Variables are:\n" +
+                                "- `command_channel`");
+            }
+        }
     }),
 
     TESTCOMMAND("testcommand", false, true, new int[]{0, 0}, msg -> {
@@ -373,39 +524,41 @@ public enum Command {
         Server srv = msg.getServer().get();
         Channel chl = msg.getServerTextChannel().get();
         User usr = msg.getUserAuthor().get();
-
         List<String> parts = Collections.unmodifiableList(Arrays.asList(msg.getContent().split(" ")));
+        ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
 
         if (!msg.isPrivate()) {
-            if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
-                List<String> param = extractParam(msg);
+            if (!serverPreferences.commandChannelId.equals("none") || serverPreferences.commandChannelId.equals(chl.getIdAsString())) {
+                if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
+                    List<String> param = extractParam(msg);
 
-                if (getCommand(msg).isPresent()) {
-                    Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1));
+                    if (getCommand(msg).isPresent()) {
+                        Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1));
 
-                    Auth auth = Auth.softGet(srv);
+                        Auth auth = Auth.softGet(srv);
 
-                    if (myCommand.isPresent()) {
-                        Command cmd = myCommand.get();
+                        if (myCommand.isPresent()) {
+                            Command cmd = myCommand.get();
 
-                        int satisfier = 0;
+                            int satisfier = 0;
 
-                        if (param.size() >= cmd.parameterRange[0] && param.size() <= cmd.parameterRange[1]) {
-                            satisfier++;
-                            log.put("Parameter Range OK", true);
-                        } else val = SuccessState.UNSUCCESSFUL;
+                            if (param.size() >= cmd.parameterRange[0] && param.size() <= cmd.parameterRange[1]) {
+                                satisfier++;
+                                log.put("Parameter Range OK", true);
+                            } else val = SuccessState.UNSUCCESSFUL;
 
-                        if (!cmd.requiresAuth || auth.isAuth(usr)) {
-                            satisfier++;
-                            log.put("Auth OK", true);
-                        } else {
-                            SuccessState.UNAUTHORIZED.evaluateForMessage(msg);
-                        }
+                            if (!cmd.requiresAuth || auth.isAuth(usr)) {
+                                satisfier++;
+                                log.put("Auth OK", true);
+                            } else {
+                                SuccessState.UNAUTHORIZED.evaluateForMessage(msg);
+                            }
 
-                        log.put("Satisfier: " + satisfier, true);
-                        if (satisfier == 2) {
-                            cmd.consumer.accept(msg);
-                            val = SuccessState.SUCCESSFUL;
+                            log.put("Satisfier: " + satisfier, true);
+                            if (satisfier == 2) {
+                                cmd.consumer.accept(msg);
+                                val = SuccessState.SUCCESSFUL;
+                            }
                         }
                     }
                 }

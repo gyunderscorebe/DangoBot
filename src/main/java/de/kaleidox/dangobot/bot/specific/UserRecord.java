@@ -1,7 +1,7 @@
 package de.kaleidox.dangobot.bot.specific;
 
 import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.Mapper;
+import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
 import org.javacord.api.entity.server.Server;
 
@@ -32,7 +32,7 @@ public class UserRecord {
         }
         this.values = new PropertiesMapper(records, ';');
 
-        Mapper.safePut(selfMap, server, this);
+        Utils.safePut(selfMap, server, this);
     }
 
     /*

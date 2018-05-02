@@ -2,7 +2,7 @@ package de.kaleidox.dangobot.util.serializer;
 
 import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.Mapper;
+import de.kaleidox.dangobot.util.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class PropertiesMapper {
         this.map = this.ioPort.read();
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            Mapper.safePut(values, entry.getKey(),
+            Utils.safePut(values, entry.getKey(),
                     new ArrayList<>(
                             Arrays.asList(
                                     entry.getValue()
@@ -197,5 +197,12 @@ public class PropertiesMapper {
 
     public ConcurrentHashMap<String, List<String>> getValues() {
         return values;
+    }
+
+    public void clearAll() {
+        values.clear();
+        map.clear();
+
+        ioPort.write(map);
     }
 }

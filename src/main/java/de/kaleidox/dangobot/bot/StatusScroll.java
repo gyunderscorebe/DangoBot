@@ -29,4 +29,9 @@ public class StatusScroll {
                 break;
         }
     }
+
+    public void custom(ActivityType type, String message) {
+        api.updateActivity(message, type);
+        this.thisMessage = 0;
+    }
 }
