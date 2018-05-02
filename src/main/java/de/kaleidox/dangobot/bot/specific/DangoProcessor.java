@@ -286,7 +286,7 @@ public class DangoProcessor {
                         if (lastKey.get() == level) {
                             message.append("**`")
                                     .append(place)
-                                    .append(":` ")
+                                    .append(".` ")
                                     .append(level)
                                     .append("x ")
                                     .append(emoji.getPrintable())

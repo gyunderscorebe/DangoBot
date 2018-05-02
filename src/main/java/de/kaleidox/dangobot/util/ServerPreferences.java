@@ -12,17 +12,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerPreferences {
     private static final ConcurrentHashMap<Long, ServerPreferences> selfMap = new ConcurrentHashMap<>();
-    public SelectedPropertiesMapper settings = new SelectedPropertiesMapper(new File("props/serverPreferences.properties"), ';');
+    public SelectedPropertiesMapper settings;
+    public String commandChannelId;
     private Debugger log;
     private Server myServer;
     private Long serverId;
-
-    public String commandChannelId;
 
     private ServerPreferences(Server server) {
         this.myServer = server;
 
         serverId = myServer.getId();
+        settings = new SelectedPropertiesMapper(new File("props/serverPreferences.properties"), serverId);
 
         commandChannelId = settings.softGet(0, "none");
 
@@ -41,13 +41,13 @@ public class ServerPreferences {
         return (selfMap.containsKey(server.getId()) ? selfMap.get(server.getId()) : selfMap.put(server.getId(), new ServerPreferences(server)));
     }
 
+    public Optional<Channel> getCommandChannel() {
+        return (commandChannelId.equals("none") ? Optional.empty() : Main.API.getChannelById(commandChannelId));
+    }
+
     public void setCommandChannel(ServerTextChannel serverTextChannel) {
         commandChannelId = serverTextChannel.getIdAsString();
         settings.set(0, commandChannelId);
         settings.write();
-    }
-
-    public Optional<Channel> getCommandChannel() {
-        return (commandChannelId.equals("none") ? Optional.empty() : Main.API.getChannelById(commandChannelId));
     }
 }

@@ -12,7 +12,6 @@ import de.kaleidox.dangobot.util.ServerPreferences;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
-import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.emoji.CustomEmoji;
@@ -22,7 +21,6 @@ import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -454,7 +452,7 @@ public enum Command {
             // post preferences
             EmbedBuilder basicEmbed = DangoBot.getBasicEmbed();
 
-            basicEmbed.addField("command_channel", serverPreferences.commandChannelId);
+            basicEmbed.addField("command_channel", serverPreferences.commandChannelId + "\n<#" + serverPreferences.commandChannelId + ">");
 
             stc.sendMessage(basicEmbed);
         } else {
@@ -463,14 +461,19 @@ public enum Command {
                 // edit command channel
                 if (mentionedChannels.size() == 1) {
                     serverPreferences.setCommandChannel(stc);
+
+                    SuccessState.SUCCESSFUL
+                            .evaluateForMessage(msg);
                 } else {
                     SuccessState.ERRORED
-                            .withMessage("No Channel Mentioned!");
+                            .withMessage("No Channel Mentioned!")
+                            .evaluateForMessage(msg);
                 }
             } else {
                 SuccessState.ERRORED
                         .withMessage("Unknown Variable Name!", "Possible Variables are:\n" +
-                                "- `command_channel`");
+                                "- `command_channel`")
+                        .evaluateForMessage(msg);
             }
         }
     }),
@@ -528,7 +531,7 @@ public enum Command {
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
 
         if (!msg.isPrivate()) {
-            if (!serverPreferences.commandChannelId.equals("none") || serverPreferences.commandChannelId.equals(chl.getIdAsString())) {
+            if (serverPreferences.commandChannelId.equals("none") || serverPreferences.commandChannelId.equals(chl.getIdAsString())) {
                 if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
                     List<String> param = extractParam(msg);
 

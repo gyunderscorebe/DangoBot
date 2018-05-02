@@ -50,13 +50,11 @@ public class Auth {
         boolean val = false;
 
         // Is contained in this Servers AUTHS Entry?
-        if (auths.containsKey(serverId.toString())) {
-            if (auths.getAll(serverId.toString()).contains(user.getIdAsString())) {
-                val = true;
-            }
+        if (auths.containsValue(serverId.toString(), user.getIdAsString())) {
+            val = true;
         }
 
-        // Has MODIFY SERVER?
+        // Has MANAGE SERVER?
         if (myServer.hasPermission(user, PermissionType.MANAGE_SERVER)) {
             val = true;
         }
