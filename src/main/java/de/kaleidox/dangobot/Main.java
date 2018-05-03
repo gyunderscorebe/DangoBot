@@ -8,7 +8,6 @@ import de.kaleidox.dangobot.util.Debugger;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.MessageType;
