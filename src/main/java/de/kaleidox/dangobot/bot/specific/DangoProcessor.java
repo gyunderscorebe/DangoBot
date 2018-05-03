@@ -181,12 +181,14 @@ public class DangoProcessor {
     }
 
     public void revokeDango() {
-        if (!lastDango.isEmpty()) {
-            User usr = lastDango.user;
-            ServerTextChannel stc = lastDango.serverTextChannel;
-            Message msg = lastDango.message;
+        if (lastDango != null) {
+            if (!lastDango.isEmpty()) {
+                User usr = lastDango.user;
+                ServerTextChannel stc = lastDango.serverTextChannel;
+                Message msg = lastDango.message;
 
-            removeDango(usr, stc, 1);
+                removeDango(usr, stc, 1);
+            }
         }
     }
 
