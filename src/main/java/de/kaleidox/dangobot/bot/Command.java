@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static de.kaleidox.dangobot.util.ServerPreferences.Variable.*;
+import static de.kaleidox.dangobot.util.ServerPreferences.Variable.COMMAND_CHANNEL;
 
 public enum Command {
     // Enum Stuff
@@ -447,6 +447,7 @@ public enum Command {
         Server srv = msg.getServer().get();
         ServerTextChannel stc = msg.getServerTextChannel().get();
         List<String> param = extractParam(msg);
+        User usr = msg.getUserAuthor().get();
         List<ServerTextChannel> mentionedChannels = msg.getMentionedChannels();
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
 
@@ -458,20 +459,50 @@ public enum Command {
                     .forEach(variable -> {
                         basicEmbed.addField("" +
                                 variable.name, "" +
-                                serverPreferences.getVariable(variable));
+                                serverPreferences.getVariable(variable).asString());
                     });
 
             stc.sendMessage(basicEmbed);
+        } else if (param.size() == 1) {
+            // only one parameter
+            if (param.get(0).toLowerCase().equals("reset")) {
+                Response.areYouSure(stc, usr, "Are you sure?", "Do you really want to reset all the server's preferences to their default values?", 30, TimeUnit.SECONDS)
+                        .thenAcceptAsync(yesno -> {
+                            if (yesno) {
+                                serverPreferences.resetAllVariables();
+                            }
+                        });
+            } else {
+                StringBuilder variables = new StringBuilder();
+                Arrays.asList(ServerPreferences.Variable.values())
+                        .forEach(variable -> {
+                            variables
+                                    .append("- `")
+                                    .append(variable.name)
+                                    .append("`\n");
+                        });
+
+                SuccessState.ERRORED
+                        .withMessage("Not enough or too many Arguments!", "Possible Variables are:\n" + variables.substring(0, variables.length() - 1))
+                        .evaluateForMessage(msg);
+            }
         } else {
             // edit preferences
             if (param.size() == 2) {
                 Optional<ServerPreferences.Variable> variableOptional = ServerPreferences.Variable.getVariable(param.get(0));
 
                 if (variableOptional.isPresent()) {
-                    ServerPreferences.Variable variable = variableOptional.get();
+                    if (param.get(1).toLowerCase().equals("reset")) {
+                        // reset the value
+                        ServerPreferences.Variable variable = variableOptional.get();
 
-                    serverPreferences.setVariable(variable, param.get(1))
-                            .evaluateForMessage(msg);
+                        serverPreferences.resetVariable(variable);
+                    } else {
+                        ServerPreferences.Variable variable = variableOptional.get();
+
+                        serverPreferences.setVariable(variable, param.get(1))
+                                .evaluateForMessage(msg);
+                    }
                 } else {
                     StringBuilder variables = new StringBuilder();
                     Arrays.asList(ServerPreferences.Variable.values())
@@ -486,6 +517,7 @@ public enum Command {
                             .withMessage("Unknown Variable Name!", "Possible Variables are:\n" + variables.substring(0, variables.length() - 1))
                             .evaluateForMessage(msg);
                 }
+
             } else {
                 StringBuilder variables = new StringBuilder();
                 Arrays.asList(ServerPreferences.Variable.values())
@@ -556,7 +588,7 @@ public enum Command {
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
 
         if (!msg.isPrivate()) {
-            if (serverPreferences.getVariable(COMMAND_CHANNEL).equals("none") || serverPreferences.getVariable(COMMAND_CHANNEL).equals(chl.getIdAsString())) {
+            if (serverPreferences.getVariable(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.getVariable(COMMAND_CHANNEL).asString().equals(chl.getIdAsString())) {
                 if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
                     List<String> param = extractParam(msg);
 

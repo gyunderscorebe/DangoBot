@@ -5,6 +5,7 @@ import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.util.CustomCollectors;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
+import de.kaleidox.dangobot.util.ServerPreferences;
 import de.kaleidox.dangobot.util.SuccessState;
 import de.kaleidox.dangobot.util.Utils;
 import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
@@ -42,6 +43,7 @@ public class DangoProcessor {
     private Emoji emoji;
     private ConcurrentHashMap<Class, Object> lastDango = new ConcurrentHashMap<>();
     private AtomicReference<Message> leaderboard = new AtomicReference<>(null);
+    private ServerPreferences preferences;
 
     private DangoProcessor(Server server) {
         this.myServer = server;
@@ -77,6 +79,7 @@ public class DangoProcessor {
         this.counter = Integer.parseInt(settings.softGet(2, 0));
 
         log = new Debugger(DangoProcessor.class.getName(), server.getName());
+        preferences = ServerPreferences.softGet(myServer);
 
         Utils.safePut(selfMap, serverId, this);
     }
@@ -117,6 +120,10 @@ public class DangoProcessor {
 
     public void giveDango(User user, ServerTextChannel inChannel) {
         giveDango(user, inChannel, 1);
+
+        if (preferences.getVariable(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
+            updateScoreboard();
+        }
     }
 
     public void giveDango(User user, ServerTextChannel inChannel, int amount) {
@@ -337,22 +344,28 @@ public class DangoProcessor {
                                 .reverse()
                                 .append("\n");
 
-                        if (maxRuntime.decrementAndGet() == 0) {
-                            if (leaderboard.get() != null) {
-                                if (editOld) {
-                                    leaderboard.get()
-                                            .edit(message.toString());
-                                } else {
-                                    leaderboard.get()
-                                            .delete("Outdated");
+                        if (preferences.getVariable(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
+                            // TODO Use Pinning and Unpinning
+                            if (maxRuntime.decrementAndGet() == 0) {
+                                if (leaderboard.get() != null) {
+                                    if (editOld) {
+                                        leaderboard.get()
+                                                .edit(message.toString());
+                                    } else {
+                                        leaderboard.get()
+                                                .delete("Outdated");
 
+                                        stc.sendMessage(message.toString())
+                                                .thenAcceptAsync(leaderboard::set);
+                                    }
+                                } else {
                                     stc.sendMessage(message.toString())
                                             .thenAcceptAsync(leaderboard::set);
                                 }
-                            } else {
-                                stc.sendMessage(message.toString())
-                                        .thenAcceptAsync(leaderboard::set);
                             }
+                        } else {
+                            stc.sendMessage(message.toString())
+                                    .thenAcceptAsync(leaderboard::set);
                         }
                     });
         } else {
