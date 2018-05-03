@@ -41,7 +41,7 @@ public class DangoProcessor {
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
     private Emoji emoji;
-    private LastDango lastDango;
+    private ConcurrentHashMap<Class, Object> lastDango = new ConcurrentHashMap<>();
     private AtomicReference<Message> leaderboard = new AtomicReference<>(null);
     private ServerPreferences preferences;
 
@@ -160,8 +160,9 @@ public class DangoProcessor {
                         }
                     });
 
-
-            lastDango = new LastDango(user, inChannel, msg);
+            lastDango.put(User.class, user);
+            lastDango.put(ServerTextChannel.class, inChannel);
+            lastDango.put(Message.class, msg);
         });
     }
 
@@ -182,9 +183,9 @@ public class DangoProcessor {
 
     public void revokeDango() {
         if (!lastDango.isEmpty()) {
-            User usr = lastDango.user;
-            ServerTextChannel stc = lastDango.serverTextChannel;
-            Message msg = lastDango.message;
+            User usr = (User) lastDango.get(User.class);
+            ServerTextChannel stc = (ServerTextChannel) lastDango.get(ServerTextChannel.class);
+            Message msg = (Message) lastDango.get(Message.class);
 
             removeDango(usr, stc, 1);
         }
@@ -389,25 +390,5 @@ public class DangoProcessor {
         rankings.clearAll();
 
         rankings.write();
-    }
-
-    private class LastDango {
-        private User user;
-        private ServerTextChannel serverTextChannel;
-        private Message message;
-
-        LastDango(User user, ServerTextChannel serverTextChannel, Message message) {
-            this.user = user;
-            this.serverTextChannel = serverTextChannel;
-            this.message = message;
-        }
-
-        boolean isEmpty() {
-            if (user == null || serverTextChannel == null || message == null) {
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 }
