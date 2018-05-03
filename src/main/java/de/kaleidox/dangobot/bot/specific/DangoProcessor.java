@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DangoProcessor {
     private static final ConcurrentHashMap<Long, DangoProcessor> selfMap = new ConcurrentHashMap<>();
@@ -40,6 +41,7 @@ public class DangoProcessor {
     private PropertiesMapper rankings;
     private Emoji emoji;
     private ConcurrentHashMap<Class, Object> lastDango = new ConcurrentHashMap<>();
+    private AtomicReference<Message> leaderboard = new AtomicReference<>(null);
 
     private DangoProcessor(Server server) {
         this.myServer = server;
@@ -87,6 +89,13 @@ public class DangoProcessor {
      */
     public final static DangoProcessor softGet(Server server) {
         return (selfMap.containsKey(server.getId()) ? selfMap.get(server.getId()) : selfMap.put(server.getId(), new DangoProcessor(server)));
+    }
+
+    public static void updateScoreboards() {
+        selfMap
+                .forEach((key, value) -> {
+                    value.updateScoreboard();
+                });
     }
 
     public void increment(Message msg) {
@@ -219,7 +228,15 @@ public class DangoProcessor {
         actions.write();
     }
 
-    public SuccessState sendScoreboard(ServerTextChannel stc) {
+    public void updateScoreboard() {
+        if (leaderboard.get() != null) {
+            ServerTextChannel stc = leaderboard.get().getServerTextChannel().get();
+
+            sendScoreboard(stc, true);
+        }
+    }
+
+    public SuccessState sendScoreboard(ServerTextChannel stc, boolean editOld) {
         TreeMap<Integer, ArrayList<User>> resultList = new TreeMap<>();
         SuccessState val = SuccessState.NOT_RUN;
         Server srv = stc.getServer();
@@ -260,8 +277,13 @@ public class DangoProcessor {
         AtomicInteger lastKey = new AtomicInteger(-1);
         AtomicInteger place = new AtomicInteger(0);
         StringBuilder message = new StringBuilder();
+        int totalDangos = 0, thisAmount = 0;
 
-        // TODO total dangos
+        for (Map.Entry<String, String> entry : rankings.getMap().entrySet()) {
+            thisAmount = Integer.parseInt(entry.getValue());
+
+            totalDangos = totalDangos + thisAmount;
+        }
 
         message
                 .append(emoji.getPrintable())
@@ -275,6 +297,13 @@ public class DangoProcessor {
                 .append("\t")
                 .append(emoji.getPrintable())
                 .append(emoji.getPrintable())
+                .append("\n")
+                .append("\n")
+                .append("**Total ")
+                .append(emoji.getPrintable())
+                .append(": ")
+                .append(totalDangos)
+                .append("**")
                 .append("\n")
                 .append("\n");
 
@@ -309,7 +338,21 @@ public class DangoProcessor {
                                 .append("\n");
 
                         if (maxRuntime.decrementAndGet() == 0) {
-                            stc.sendMessage(message.toString());
+                            if (leaderboard.get() != null) {
+                                if (editOld) {
+                                    leaderboard.get()
+                                            .edit(message.toString());
+                                } else {
+                                    leaderboard.get()
+                                            .delete("Outdated");
+
+                                    stc.sendMessage(message.toString())
+                                            .thenAcceptAsync(leaderboard::set);
+                                }
+                            } else {
+                                stc.sendMessage(message.toString())
+                                        .thenAcceptAsync(leaderboard::set);
+                            }
                         }
                     });
         } else {

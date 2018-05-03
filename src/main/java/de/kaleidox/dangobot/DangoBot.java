@@ -8,7 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public final class DangoBot {
-    public static final String VERSION_NUMBER = "1.4.3";
+    public static final String VERSION_NUMBER = "1.5.2";
     public static final boolean isTesting = System.getProperty("os.name").equals("Windows 10");
     public static final Long BOT_ID = 439082176537952267L;
     public static final Long DBL_BOT_ID = BOT_ID;

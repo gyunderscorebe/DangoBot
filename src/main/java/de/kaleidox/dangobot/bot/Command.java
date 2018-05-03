@@ -104,7 +104,7 @@ public enum Command {
         ServerTextChannel stc = msg.getServerTextChannel().get();
         DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
 
-        dangoProcessor.sendScoreboard(stc)
+        dangoProcessor.sendScoreboard(stc, false)
                 .evaluateForMessage(msg);
     }),
 

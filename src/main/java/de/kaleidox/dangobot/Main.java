@@ -10,6 +10,8 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.message.MessageType;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
@@ -48,7 +50,6 @@ public class Main {
                     } catch (MalformedURLException e) {
                         log.put("Failed to Update the Avatar");
                     }
-                    api.addMessageCreateListener(chat::print);
 
                     api.addMessageCreateListener(event -> {
                         event.getServer().ifPresent(server -> {
@@ -97,9 +98,21 @@ public class Main {
                             });
                         }
                     });
+                    // Delete Own PINNED Messages
+                    api.addMessageCreateListener(event -> {
+                        MessageType type = event.getMessage()
+                                .getType();
+                        MessageAuthor author = event.getMessage().getAuthor();
+
+                        if (type == MessageType.CHANNEL_PINNED_MESSAGE && author.isYourself()) {
+                            event.getMessage()
+                                    .delete("Unneccesary");
+                        }
+                    });
 
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> DBLAPI.setStats(API.getYourself().getIdAsString(), API.getServers().size()), 1, 1, TimeUnit.MINUTES); // Update DBL server Count every Minute
+                    api.getThreadPool().getScheduler().scheduleAtFixedRate(DangoProcessor::updateScoreboards, 30, 30, TimeUnit.MINUTES); // update old leaderboards
                 });
     }
 }

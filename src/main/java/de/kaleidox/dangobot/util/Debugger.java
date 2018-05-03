@@ -1,8 +1,6 @@
 package de.kaleidox.dangobot.util;
 
 import de.kaleidox.dangobot.DangoBot;
-import org.javacord.api.entity.message.Message;
-import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -57,7 +55,7 @@ public class Debugger {
             if (DangoBot.isTesting)
                 return put("[Debug] " + message);
             else
-                return false;
+                return put("[Debug] " + message);
         } else {
             return put(message);
         }
@@ -77,27 +75,6 @@ public class Debugger {
     }
 
     // Private Methods
-
-    public Boolean print(Message msg) {
-        StringBuilder info = new StringBuilder();
-
-        info
-                .append("Server: ")
-                .append(msg.getServer().get().getName())
-                .append(" Channel: ")
-                .append(msg.getServerTextChannel().get().getName())
-                .append(" Author: ")
-                .append(msg.getAuthor().getName())
-                .append("#")
-                .append(msg.getAuthor().getDiscriminator().get())
-                .append(" Content: \"")
-                .append(msg.getContent())
-                .append("\"");
-
-        put(info);
-
-        return false;
-    }
 
     private Boolean send() {
         Boolean give;
@@ -123,9 +100,5 @@ public class Debugger {
 
     private void putTime() {
         sb.append(getTime());
-    }
-
-    public void print(MessageCreateEvent messageCreateEvent) {
-        print(messageCreateEvent.getMessage());
     }
 }
