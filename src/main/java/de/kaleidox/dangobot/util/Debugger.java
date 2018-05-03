@@ -23,6 +23,10 @@ public class Debugger {
         isSubclass = true;
     }
 
+    public static void print() {
+        System.out.println("### --- DEBUGGING --- ###");
+    }
+
     public void speak() {
         this.put("### --- DEBUGGING --- ###", true);
     }
