@@ -586,6 +586,7 @@ public enum Command {
         User usr = msg.getUserAuthor().get();
         List<String> parts = Collections.unmodifiableList(Arrays.asList(msg.getContent().split(" ")));
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
+        Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1));
 
         if (!msg.isPrivate()) {
             if (serverPreferences.get(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.get(COMMAND_CHANNEL).asString().equals(chl.getIdAsString())) {
@@ -593,8 +594,6 @@ public enum Command {
                     List<String> param = extractParam(msg);
 
                     if (getCommand(msg).isPresent()) {
-                        Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1));
-
                         Auth auth = Auth.softGet(srv);
 
                         if (myCommand.isPresent()) {
@@ -621,6 +620,16 @@ public enum Command {
                             }
                         }
                     }
+                }
+            } else if (myCommand.isPresent()) {
+                Command checkScores = myCommand.get();
+
+                switch (checkScores) {
+                    case SELF_STATS:
+                    case SCOREBOARD:
+                        checkScores.consumer
+                                .accept(msg);
+                        break;
                 }
             }
         }
