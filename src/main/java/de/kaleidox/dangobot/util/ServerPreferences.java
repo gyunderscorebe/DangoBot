@@ -61,8 +61,8 @@ public class ServerPreferences {
         }
     }
 
-    public String getVariable(Variable variable) {
-        return settings.softGet(variable.position, variable.defaultValue);
+    public Value getVariable(Variable variable) {
+        return new Value(settings.softGet(variable.position, variable.defaultValue), variable);
     }
 
     public Set<Map.Entry<String, String>> getVariables() {
@@ -70,19 +70,22 @@ public class ServerPreferences {
     }
 
     public enum Variable {
-        COMMAND_CHANNEL("command_channel", 0, "none", "[0-9]+"),
-        ADVANCED_LEADERBOARD("advanced_leaderboard", 1, "false", "(true)|(false)");
+        COMMAND_CHANNEL("command_channel", 0, "none", "[0-9]+", Long.class),
+        ADVANCED_LEADERBOARD("advanced_leaderboard", 1, "false", "(true)|(false)", Boolean.class),
+        ENABLE_REVOKE_VOTING("enable_revoke_voting", 2, "false", "(true)|(false)", Boolean.class);
 
         public String name;
         public int position;
         public String defaultValue;
         public String accepts;
+        public Class type;
 
-        Variable(String name, int position, String defaultValue, String accepts) {
+        Variable(String name, int position, String defaultValue, String accepts, Class type) {
             this.name = name;
             this.position = position;
             this.defaultValue = defaultValue;
             this.accepts = accepts;
+            this.type = type;
         }
 
         public static Optional<Variable> getVariable(String name) {
@@ -93,6 +96,37 @@ public class ServerPreferences {
 
         private boolean accepts(String value) {
             return value.matches(this.accepts);
+        }
+    }
+
+    public class Value {
+        private String of;
+        private Class type;
+
+        Value(String of, Variable ofVariable) {
+            this.of = of;
+            this.type = ofVariable.type;
+        }
+
+        public boolean asBoolean() {
+            if (type == Boolean.class)
+                return Boolean.valueOf(of);
+            else
+                return false;
+        }
+
+        public int asInteger() {
+            if (type == Integer.class)
+                return Integer.parseInt(of);
+            else
+                return 0;
+        }
+
+        public long asLong() {
+            if (type == Long.class)
+                return Long.parseLong(of);
+            else
+                return 0;
         }
     }
 }
