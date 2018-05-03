@@ -121,7 +121,7 @@ public class DangoProcessor {
     public void giveDango(User user, ServerTextChannel inChannel) {
         giveDango(user, inChannel, 1);
 
-        if (preferences.getVariable(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
+        if (preferences.get(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
             updateScoreboard();
         }
     }
@@ -343,7 +343,7 @@ public class DangoProcessor {
                                 .reverse()
                                 .append("\n");
 
-                        if (preferences.getVariable(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
+                        if (preferences.get(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
                             // TODO Use Pinning and Unpinning
                             if (maxRuntime.decrementAndGet() == 0) {
                                 if (leaderboard.get() != null) {

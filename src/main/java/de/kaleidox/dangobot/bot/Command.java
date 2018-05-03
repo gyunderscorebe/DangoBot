@@ -459,7 +459,7 @@ public enum Command {
                     .forEach(variable -> {
                         basicEmbed.addField("" +
                                 variable.name, "" +
-                                serverPreferences.getVariable(variable).asString());
+                                serverPreferences.get(variable).asString());
                     });
 
             stc.sendMessage(basicEmbed);
@@ -469,7 +469,7 @@ public enum Command {
                 Response.areYouSure(stc, usr, "Are you sure?", "Do you really want to reset all the server's preferences to their default values?", 30, TimeUnit.SECONDS)
                         .thenAcceptAsync(yesno -> {
                             if (yesno) {
-                                serverPreferences.resetAllVariables();
+                                serverPreferences.resetAll();
                             }
                         });
             } else {
@@ -496,11 +496,11 @@ public enum Command {
                         // reset the value
                         ServerPreferences.Variable variable = variableOptional.get();
 
-                        serverPreferences.resetVariable(variable);
+                        serverPreferences.reset(variable);
                     } else {
                         ServerPreferences.Variable variable = variableOptional.get();
 
-                        serverPreferences.setVariable(variable, param.get(1))
+                        serverPreferences.set(variable, param.get(1))
                                 .evaluateForMessage(msg);
                     }
                 } else {
@@ -588,7 +588,7 @@ public enum Command {
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
 
         if (!msg.isPrivate()) {
-            if (serverPreferences.getVariable(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.getVariable(COMMAND_CHANNEL).asString().equals(chl.getIdAsString())) {
+            if (serverPreferences.get(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.get(COMMAND_CHANNEL).asString().equals(chl.getIdAsString())) {
                 if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
                     List<String> param = extractParam(msg);
 

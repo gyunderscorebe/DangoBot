@@ -47,7 +47,7 @@ public class ServerPreferences {
         return (selfMap.containsKey(server.getId()) ? selfMap.get(server.getId()) : selfMap.put(server.getId(), new ServerPreferences(server)));
     }
 
-    public SuccessState setVariable(Variable variable, Object value) {
+    public SuccessState set(Variable variable, Object value) {
         if (variable.accepts(value.toString())) {
             settings.set(variable.position, value);
             settings.write();
@@ -63,20 +63,20 @@ public class ServerPreferences {
         }
     }
 
-    public Value getVariable(Variable variable) {
+    public Value get(Variable variable) {
         return new Value(settings.softGet(variable.position, variable.defaultValue), variable.type);
     }
 
-    public void resetVariable(Variable variable) {
-        setVariable(variable, variable.defaultValue);
+    public void reset(Variable variable) {
+        set(variable, variable.defaultValue);
 
         settings.write();
     }
 
-    public void resetAllVariables() {
+    public void resetAll() {
         Arrays.asList(Variable.values())
                 .forEach(variable -> {
-                    setVariable(variable, variable.defaultValue);
+                    set(variable, variable.defaultValue);
                 });
 
         settings.write();
