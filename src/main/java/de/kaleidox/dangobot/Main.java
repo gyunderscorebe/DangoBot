@@ -85,19 +85,6 @@ public class Main {
                     });
 
                     //// Shenanigans
-                    // Wastebaskets
-                    api.addReactionAddListener(event -> {
-                        Emoji emoji = event.getEmoji();
-                        Message msg = event.requestMessage().join();
-
-                        if (!event.getUser().isBot()) {
-                            emoji.asUnicodeEmoji().ifPresent(then -> {
-                                if (then.equals("🗑") || then.equals("\uD83D\uDEAE")) {
-                                    msg.delete();
-                                }
-                            });
-                        }
-                    });
                     // Delete Own PINNED Messages
                     api.addMessageCreateListener(event -> {
                         MessageType type = event.getMessage()
