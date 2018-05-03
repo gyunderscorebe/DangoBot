@@ -64,7 +64,7 @@ public class ServerPreferences {
     }
 
     public Value getVariable(Variable variable) {
-        return new Value(settings.softGet(variable.position, variable.defaultValue), variable);
+        return new Value(settings.softGet(variable.position, variable.defaultValue), variable.type);
     }
 
     public void resetVariable(Variable variable) {
@@ -109,41 +109,6 @@ public class ServerPreferences {
 
         private boolean accepts(String value) {
             return value.matches(this.accepts);
-        }
-    }
-
-    public class Value {
-        private String of;
-        private Class type;
-
-        Value(String of, Variable ofVariable) {
-            this.of = of;
-            this.type = ofVariable.type;
-        }
-
-        public String asString() {
-            return of;
-        }
-
-        public boolean asBoolean() {
-            if (type == Boolean.class)
-                return Boolean.valueOf(of);
-            else
-                return false;
-        }
-
-        public int asInteger() {
-            if (type == Integer.class)
-                return Integer.parseInt(of);
-            else
-                return 0;
-        }
-
-        public long asLong() {
-            if (type == Long.class)
-                return Long.parseLong(of);
-            else
-                return 0;
         }
     }
 }
