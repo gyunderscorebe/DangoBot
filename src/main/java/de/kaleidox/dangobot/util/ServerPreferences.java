@@ -5,17 +5,15 @@ import org.javacord.api.entity.server.Server;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerPreferences {
     private static final ConcurrentHashMap<Long, ServerPreferences> selfMap = new ConcurrentHashMap<>();
     public SelectedPropertiesMapper settings;
     public ConcurrentHashMap<String, String> variables = new ConcurrentHashMap<String, String>() {{
-        put("command_channel", "none");
-        put("advanced_leaderboard", "false");
+        Arrays.asList(Variable.values())
+                .forEach(variable -> put(variable.name, variable.defaultValue));
     }};
     private Debugger log;
     private Server myServer;
@@ -27,10 +25,14 @@ public class ServerPreferences {
         serverId = myServer.getId();
         settings = new SelectedPropertiesMapper(new File("props/serverPreferences.properties"), serverId);
 
-        variables.put("command_channel", settings.softGet(0, "none"));
-        variables.put("advanced_leaderboard", settings.softGet(1, "false"));
+        Arrays.asList(Variable.values())
+                .forEach(variable -> {
+                    variables.put(variable.name, settings.softGet(variable.position, variable.defaultValue));
+                });
 
         log = new Debugger(ServerPreferences.class.getName(), server.getName());
+
+        settings.write();
 
         Utils.safePut(selfMap, serverId, this);
     }
@@ -65,13 +67,24 @@ public class ServerPreferences {
         return new Value(settings.softGet(variable.position, variable.defaultValue), variable);
     }
 
-    public Set<Map.Entry<String, String>> getVariables() {
-        return variables.entrySet();
+    public void resetVariable(Variable variable) {
+        setVariable(variable, variable.defaultValue);
+
+        settings.write();
+    }
+
+    public void resetAllVariables() {
+        Arrays.asList(Variable.values())
+                .forEach(variable -> {
+                    setVariable(variable, variable.defaultValue);
+                });
+
+        settings.write();
     }
 
     public enum Variable {
         COMMAND_CHANNEL("command_channel", 0, "none", "[0-9]+", Long.class),
-        ADVANCED_LEADERBOARD("advanced_leaderboard", 1, "false", "(true)|(false)", Boolean.class),
+        ADVANCED_LEADERBOARD("advanced_leaderboard", 1, "true", "(true)|(false)", Boolean.class),
         ENABLE_REVOKE_VOTING("enable_revoke_voting", 2, "false", "(true)|(false)", Boolean.class);
 
         public String name;
@@ -106,6 +119,10 @@ public class ServerPreferences {
         Value(String of, Variable ofVariable) {
             this.of = of;
             this.type = ofVariable.type;
+        }
+
+        public String asString() {
+            return of;
         }
 
         public boolean asBoolean() {
