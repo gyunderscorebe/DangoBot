@@ -31,6 +31,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import static de.kaleidox.dangobot.util.ServerPreferences.Variable.*;
+
 public enum Command {
     // Enum Stuff
     HELP("help", true, false, new int[]{0, 1}, msg -> {
@@ -452,27 +454,50 @@ public enum Command {
             // post preferences
             EmbedBuilder basicEmbed = DangoBot.getBasicEmbed();
 
-            basicEmbed.addField("command_channel", serverPreferences.commandChannelId + "\n<#" + serverPreferences.commandChannelId + ">");
+            Arrays.asList(ServerPreferences.Variable.values())
+                    .forEach(variable -> {
+                        basicEmbed.addField("" +
+                                variable.name, "" +
+                                serverPreferences.getVariable(variable));
+                    });
 
             stc.sendMessage(basicEmbed);
         } else {
             // edit preferences
-            if (param.get(0).toLowerCase().equals("command_channel")) {
-                // edit command channel
-                if (mentionedChannels.size() == 1) {
-                    serverPreferences.setCommandChannel(stc);
+            if (param.size() == 2) {
+                Optional<ServerPreferences.Variable> variableOptional = ServerPreferences.Variable.getVariable(param.get(0));
 
-                    SuccessState.SUCCESSFUL
+                if (variableOptional.isPresent()) {
+                    ServerPreferences.Variable variable = variableOptional.get();
+
+                    serverPreferences.setVariable(variable, param.get(1))
                             .evaluateForMessage(msg);
                 } else {
+                    StringBuilder variables = new StringBuilder();
+                    Arrays.asList(ServerPreferences.Variable.values())
+                            .forEach(variable -> {
+                                variables
+                                        .append("- `")
+                                        .append(variable.name)
+                                        .append("`\n");
+                            });
+
                     SuccessState.ERRORED
-                            .withMessage("No Channel Mentioned!")
+                            .withMessage("Unknown Variable Name!", "Possible Variables are:\n" + variables.substring(0, variables.length() - 1))
                             .evaluateForMessage(msg);
                 }
             } else {
+                StringBuilder variables = new StringBuilder();
+                Arrays.asList(ServerPreferences.Variable.values())
+                        .forEach(variable -> {
+                            variables
+                                    .append("- `")
+                                    .append(variable.name)
+                                    .append("`\n");
+                        });
+
                 SuccessState.ERRORED
-                        .withMessage("Unknown Variable Name!", "Possible Variables are:\n" +
-                                "- `command_channel`")
+                        .withMessage("Not enough or too many Arguments!", "Possible Variables are:\n" + variables.substring(0, variables.length() - 1))
                         .evaluateForMessage(msg);
             }
         }
@@ -531,7 +556,7 @@ public enum Command {
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
 
         if (!msg.isPrivate()) {
-            if (serverPreferences.commandChannelId.equals("none") || serverPreferences.commandChannelId.equals(chl.getIdAsString())) {
+            if (serverPreferences.getVariable(COMMAND_CHANNEL).equals("none") || serverPreferences.getVariable(COMMAND_CHANNEL).equals(chl.getIdAsString())) {
                 if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
                     List<String> param = extractParam(msg);
 
