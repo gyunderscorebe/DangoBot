@@ -170,13 +170,11 @@ public enum Command {
                 if (s.matches("[0-9]+")) {
                     int i = Integer.parseInt(s);
                     dangoProcessor.removeDango(user, stc, i);
-                    dangoProcessor.sendUserScore(stc, user);
 
                     SuccessState.SUCCESSFUL
                             .evaluateForMessage(msg);
                 } else {
                     dangoProcessor.removeDango(user, stc, 1);
-                    dangoProcessor.sendUserScore(stc, user);
 
                     SuccessState.SUCCESSFUL
                             .withMessage("You did not specify a valid number, so " + user.getNickname(srv).orElseGet(user::getName) + " lost 1 Dango.")
@@ -184,7 +182,6 @@ public enum Command {
                 }
             } else {
                 dangoProcessor.removeDango(user, stc, 1);
-                dangoProcessor.sendUserScore(stc, user);
 
                 SuccessState.SUCCESSFUL
                         .withMessage("You did not specify a number, so " + user.getNickname(srv).orElseGet(user::getName) + " lost 1 Dango.")
