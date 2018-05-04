@@ -37,7 +37,8 @@ public class DangoProcessor {
     private Debugger log;
     private Server myServer;
     private long serverId;
-    private int counter, counterMax;
+    private AtomicInteger counter = new AtomicInteger();
+    private AtomicInteger counterMax = new AtomicInteger();
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
     private Emoji emoji;
@@ -74,9 +75,9 @@ public class DangoProcessor {
         }
         this.actions = new PropertiesMapper(action, ';');
 
-        this.counterMax = Integer.parseInt(settings.softGet(0, 100));
+        this.counterMax.set(Integer.parseInt(settings.softGet(0, 100)));
         this.emoji = new Emoji(settings.softGet(1, "\uD83C\uDF61"));
-        this.counter = Integer.parseInt(settings.softGet(2, 0));
+        this.counter.set(Integer.parseInt(settings.softGet(2, 0)));
 
         log = new Debugger(DangoProcessor.class.getName(), server.getName());
         preferences = ServerPreferences.softGet(myServer);
@@ -108,11 +109,11 @@ public class DangoProcessor {
         if (userAuthor.isUser() && !userAuthor.isYourself()) {
             User usr = userAuthor.asUser().get();
 
-            counter++;
+            counter.incrementAndGet();
 
             settings.set(2, counter);
 
-            if (counter >= counterMax) {
+            if (counter.get() >= counterMax.get()) {
                 giveDango(usr, stc);
             }
         }
@@ -131,7 +132,7 @@ public class DangoProcessor {
         rankings.write();
 
         inChannel.sendMessage(emoji.getPrintable()).thenAccept(msg -> {
-            counter = 0;
+            counter.set(0);
 
             int newLevel = Integer.parseInt(rankings.get(user.getId(), 0));
 
@@ -167,14 +168,17 @@ public class DangoProcessor {
 
     public void removeDango(User user, ServerTextChannel inChannel, int amount) {
         int currentDangos = Integer.parseInt(rankings.softGet(user.getId(), 0, 0));
+        int newAmount = currentDangos - amount;
 
-        if (currentDangos != 0) {
-            rankings.set(user.getId(), 0, currentDangos - amount);
+        if (currentDangos > 0) {
+            log.put(newAmount);
+            rankings.set(user.getId(), 0, (newAmount < 0 ? 0 : newAmount));
             rankings.write();
         }
 
         inChannel.sendMessage("Dango Removed from User: " + user
-                .getNickname(inChannel.getServer()).orElseGet(user::getName))
+                .getNickname(inChannel.getServer()).orElseGet(user::getName) + "\n" +
+                "They now have " + (newAmount < 0 ? 0 : newAmount) + " ")
                 .thenAccept(msg -> {
                     // nothing to see here
                 }).exceptionally(ExceptionLogger.get());
@@ -193,11 +197,11 @@ public class DangoProcessor {
     }
 
     public int getCounterMax() {
-        return counterMax;
+        return counterMax.get();
     }
 
     public void setCounterMax(int counterMax) {
-        this.counterMax = counterMax;
+        this.counterMax.set(counterMax);
         settings.set(0, counterMax);
         settings.write();
     }
@@ -267,7 +271,9 @@ public class DangoProcessor {
                     ArrayList<User> newList = new ArrayList<>();
 
                     newList.add(user);
-                    resultList.put(thisLevel, newList);
+                    if (thisLevel > 0) {
+                        resultList.put(thisLevel, newList);
+                    }
                 }
             } catch (InterruptedException | ExecutionException e) {
                 log.put(e.getMessage());
