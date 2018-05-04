@@ -645,7 +645,8 @@ public enum Command {
         if (keyword != null) {
             return VALUES.stream()
                     .filter(c -> Arrays.stream(c.keywords)
-                            .anyMatch(w -> w.equals(keyword)))
+                            .map(String::toLowerCase)
+                            .anyMatch(w -> w.equals(keyword.toLowerCase())))
                     .findAny();
         }
 
