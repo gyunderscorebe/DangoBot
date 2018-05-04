@@ -455,8 +455,8 @@ public enum Command {
             Arrays.asList(ServerPreferences.Variable.values())
                     .forEach(variable -> {
                         basicEmbed.addField("" +
-                                variable.name, "" +
-                                serverPreferences.get(variable).asString());
+                                variable.name, "```" +
+                                serverPreferences.get(variable).asString() + "```");
                     });
 
             stc.sendMessage(basicEmbed);
@@ -624,6 +624,7 @@ public enum Command {
                 switch (checkScores) {
                     case SELF_STATS:
                     case SCOREBOARD:
+                    case PREFERENCE:
                         checkScores.consumer
                                 .accept(msg);
                         break;
