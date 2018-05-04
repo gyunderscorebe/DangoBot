@@ -12,7 +12,6 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.MessageType;
 import org.javacord.api.entity.server.Server;
-import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -61,7 +60,7 @@ public class Main {
                     //// Actual Bot Part
                     api.addMessageCreateListener(event -> {
                         Message msg = event.getMessage();
-                        User usr = msg.getUserAuthor().get();
+                        MessageAuthor author = msg.getAuthor();
 
                         if (msg.isPrivate()) {
                             Optional<Command> commandOpt = Command.getCommand(msg);
@@ -79,7 +78,9 @@ public class Main {
                             Server srv = event.getServer().get();
 
                             Command.processCommand(msg);
-                            DangoProcessor.softGet(srv).increment(msg);
+                            if (author.isUser()) {
+                                DangoProcessor.softGet(srv).increment(msg);
+                            }
                         }
                     });
 
