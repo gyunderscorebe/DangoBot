@@ -619,20 +619,33 @@ public enum Command {
                     }
                 }
             } else if (myCommand.isPresent()) {
-                Command checkScores = myCommand.get();
+                if (Command.isActivatedCommand(msg)) {
+                    Command checkScores = myCommand.get();
 
-                switch (checkScores) {
-                    case SELF_STATS:
-                    case SCOREBOARD:
-                    case PREFERENCE:
-                        checkScores.consumer
-                                .accept(msg);
-                        break;
+                    switch (checkScores) {
+                        case SELF_STATS:
+                        case SCOREBOARD:
+                        case PREFERENCE:
+                            checkScores.consumer
+                                    .accept(msg);
+                            break;
+                    }
                 }
             }
         }
 
         return val;
+    }
+
+    private static boolean isActivatedCommand(Message msg) {
+        return KEYWORDS.stream()
+                .anyMatch(k -> msg
+                        .getContent()
+                        .split(" ")
+                        [0]
+                        .toLowerCase()
+                        .equals(k.toLowerCase())
+                );
     }
 
     public static Optional<Command> getCommand(Message msg) {

@@ -98,7 +98,10 @@ public class Main {
                     });
 
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
-                    api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> DBLAPI.setStats(API.getYourself().getIdAsString(), API.getServers().size()), 1, 1, TimeUnit.MINUTES); // Update DBL server Count every Minute
+                    api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> {
+                        if (!DangoBot.isTesting)
+                            DBLAPI.setStats(API.getYourself().getIdAsString(), API.getServers().size());
+                    }, 1, 1, TimeUnit.MINUTES); // Update DBL server Count every Minute
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(DangoProcessor::updateScoreboards, 30, 30, TimeUnit.MINUTES); // update old leaderboards
                 });
     }
