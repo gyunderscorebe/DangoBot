@@ -34,6 +34,13 @@ public class Value {
             return 0;
     }
 
+    public float asFloat() {
+        if (type == Float.class)
+            return Float.parseFloat(of);
+        else
+            return 0;
+    }
+
     @Override
     public String toString() {
         return of;
