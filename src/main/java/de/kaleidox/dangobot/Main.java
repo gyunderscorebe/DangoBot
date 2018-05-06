@@ -3,7 +3,7 @@ package de.kaleidox.dangobot;
 import de.kaleidox.dangobot.bot.Command;
 import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
-import de.kaleidox.dangobot.bot.specific.records.UserRecord;
+import de.kaleidox.dangobot.bot.specific.UserRecordProcessor;
 import de.kaleidox.dangobot.util.Debugger;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
@@ -17,6 +17,10 @@ import org.javacord.api.entity.user.User;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +34,20 @@ public class Main {
     private static Debugger chat = new Debugger("Chat");
 
     public static void main(String args[]) {
+        /**
+         * Calculate the initial delay until 0 AM in GMT+2 (Germany)
+         */
+        LocalDateTime localNow = LocalDateTime.now();
+        ZoneId currentZone = ZoneId.of("GMT+2");
+        ZonedDateTime zonedNow = ZonedDateTime.of(localNow, currentZone);
+        ZonedDateTime zonedNext5;
+        zonedNext5 = zonedNow.withHour(0).withMinute(0).withSecond(0);
+        if (zonedNow.compareTo(zonedNext5) > 0)
+            zonedNext5 = zonedNext5.plusDays(1);
+
+        Duration duration = Duration.between(zonedNow, zonedNext5);
+        long initalDelay = duration.getSeconds();
+
         DBLAPI = new DiscordBotListAPI
                 .Builder()
                 .token(DangoBot.DBL_BOT_TOKEN)
@@ -55,7 +73,7 @@ public class Main {
                     api.addMessageCreateListener(event -> {
                         event.getServer().ifPresent(server -> {
                             if (server.getId() != 264445053596991498L) {
-                                UserRecord.softGet(server).newMessage(event);
+                                UserRecordProcessor.softGet(server).newMessage(event);
                             }
                         });
                     });
@@ -100,6 +118,7 @@ public class Main {
                         }
                     });
 
+                    api.getThreadPool().getScheduler().scheduleAtFixedRate(UserRecordProcessor::resetDailies, initalDelay, 1, TimeUnit.DAYS); // daily refreshes
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> {
                         if (!DangoBot.isTesting)
