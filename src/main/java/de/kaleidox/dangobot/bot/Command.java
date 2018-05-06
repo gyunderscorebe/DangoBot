@@ -5,6 +5,7 @@ import de.kaleidox.dangobot.Main;
 import de.kaleidox.dangobot.bot.libraries.EmbedLibrary;
 import de.kaleidox.dangobot.bot.libraries.HelpLibrary;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
+import de.kaleidox.dangobot.bot.specific.UserRecordProcessor;
 import de.kaleidox.dangobot.discord.ui.Response;
 import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Emoji;
@@ -409,6 +410,27 @@ public enum Command {
         }
     }),
 
+    RECORD_INFORMATION(new String[]{"records", "about"}, false, false, new int[]{0, 1}, msg -> {
+        Server srv = msg.getServer().get();
+        User usr = msg.getUserAuthor().get();
+        ServerTextChannel stc = msg.getServerTextChannel().get();
+        List<User> mentionedUsers = msg.getMentionedUsers();
+        UserRecordProcessor userRecordProcessor = UserRecordProcessor.softGet(srv);
+        List<String> param = extractParam(msg);
+
+        if (param.size() == 1) {
+            if (mentionedUsers.size() == 1) {
+                userRecordProcessor.sendInformation(stc, mentionedUsers.get(0), usr);
+            } else {
+                SuccessState.ERRORED
+                        .withMessage("No User Mention found!")
+                        .evaluateForMessage(msg);
+            }
+        } else {
+            userRecordProcessor.sendInformation(stc, usr, usr);
+        }
+    }),
+
     ADD_AUTH(new String[]{"auth", "auth-add"}, false, true, new int[]{1, 10}, msg -> {
         Server srv = msg.getServer().get();
         List<User> mentionedUsers = msg.getMentionedUsers();
@@ -584,7 +606,7 @@ public enum Command {
         User usr = msg.getUserAuthor().get();
         List<String> parts = Collections.unmodifiableList(Arrays.asList(msg.getContent().split(" ")));
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
-        Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1));
+        Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1, ""));
 
         if (!msg.isPrivate()) {
             if (serverPreferences.get(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.get(COMMAND_CHANNEL).asString().equals(chl.getMentionTag())) {
@@ -650,7 +672,7 @@ public enum Command {
     }
 
     public static Optional<Command> getCommand(Message msg) {
-        return findFromKeyword(Utils.fromNullable(Arrays.asList(msg.getContent().split(" ")), 1));
+        return findFromKeyword(Utils.fromNullable(Arrays.asList(msg.getContent().split(" ")), 1, ""));
     }
 
     private static Optional<Command> findFromKeyword(String keyword) {

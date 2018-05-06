@@ -8,6 +8,7 @@ import de.kaleidox.dangobot.util.Debugger;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.MessageType;
@@ -70,14 +71,6 @@ public class Main {
                         log.put("Failed to Update the Avatar");
                     }
 
-                    api.addMessageCreateListener(event -> {
-                        event.getServer().ifPresent(server -> {
-                            if (server.getId() != 264445053596991498L) {
-                                UserRecordProcessor.softGet(server).newMessage(event);
-                            }
-                        });
-                    });
-
                     //// Actual Bot Part
                     api.addMessageCreateListener(event -> {
                         Message msg = event.getMessage();
@@ -101,6 +94,9 @@ public class Main {
                             Command.processCommand(msg);
                             if (author.isUser()) {
                                 DangoProcessor.softGet(srv).increment(msg);
+                                if (srv.getId() != 264445053596991498L) {
+                                    UserRecordProcessor.softGet(srv).newMessage(event);
+                                }
                             }
                         }
                     });
@@ -118,7 +114,10 @@ public class Main {
                         }
                     });
 
-                    api.getThreadPool().getScheduler().scheduleAtFixedRate(UserRecordProcessor::resetDailies, initalDelay, 1, TimeUnit.DAYS); // daily refreshes
+                    api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> {
+                        status.custom(ActivityType.PLAYING, "CURRENTLY RUNNING DAILY UPDATES, EXPECT LAG");
+                        UserRecordProcessor.resetDailies();
+                    }, initalDelay, 1, TimeUnit.DAYS); // daily refreshes
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> {
                         if (!DangoBot.isTesting)
