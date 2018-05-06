@@ -1,6 +1,5 @@
 package de.kaleidox.dangobot;
 
-import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
@@ -10,7 +9,6 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,7 +41,7 @@ public final class DangoBot {
                 .setAuthor(BOT_NAME, BOT_URL, ICON_URL)
                 .setTimestamp()
                 .setUrl(BOT_URL)
-                .setColor(collect.get(collect.size()-1)
+                .setColor(collect.get(collect.size() - 1)
                 );
     }
 
