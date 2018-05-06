@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static de.kaleidox.dangobot.bot.specific.UserRecordProcessor.Variable.AVERAGE_MSG_LENGTH;

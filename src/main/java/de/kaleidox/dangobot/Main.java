@@ -46,7 +46,7 @@ public class Main {
         Duration duration = Duration.between(zonedNow, zonedNext5);
         long initalDelay = duration.getSeconds();
 
-        log.put("INITIAL DELAY: "+initalDelay+TimeUnit.SECONDS.name());
+        log.put("INITIAL DELAY: " + initalDelay + TimeUnit.SECONDS.name());
 
         DBLAPI = new DiscordBotListAPI
                 .Builder()
@@ -116,7 +116,7 @@ public class Main {
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> {
                         status.custom(ActivityType.PLAYING, "CURRENTLY RUNNING DAILY UPDATES, EXPECT LAG");
                         UserRecordProcessor.resetDailies();
-                    }, initalDelay, 60*60*24, TimeUnit.SECONDS); // daily refreshes
+                    }, initalDelay, 60 * 60 * 24, TimeUnit.SECONDS); // daily refreshes
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(status::update, 20, 20, TimeUnit.SECONDS); // Update the Status every 20 Seconds
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(() -> {
                         if (!DangoBot.isTesting)
