@@ -4,6 +4,7 @@ import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -27,6 +28,23 @@ public final class DangoBot {
     public static final String OWNER_TAG = "@Kaleidox#0001";
     private static final Long PERMISSION_STRING = 470248512L;
     public static final String INVITE_LINK = "https://discordapp.com/oauth2/authorize?client_id=" + BOT_ID + "&scope=bot&permissions=" + PERMISSION_STRING;
+
+    public static EmbedBuilder getBasicEmbed(Server forServer, User forUser) {
+        List<Color> collect = forServer.getRolesOf(Main.SELF)
+                .stream()
+                .map(Role::getColor)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        return new EmbedBuilder()
+                .setFooter("Requested by " + forUser.getDiscriminatedName(), forUser.getAvatar().getUrl().toString())
+                .setAuthor(BOT_NAME, BOT_URL, ICON_URL)
+                .setTimestamp()
+                .setUrl(BOT_URL)
+                .setColor(collect.get(collect.size() - 1)
+                );
+    }
 
     public static EmbedBuilder getBasicEmbed(Server forServer) {
         List<Color> collect = forServer.getRolesOf(Main.SELF)
