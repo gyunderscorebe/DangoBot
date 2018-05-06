@@ -32,12 +32,9 @@ public class Main {
     public static User SELF;
     public static DiscordBotListAPI DBLAPI;
     private static Debugger log = new Debugger(Main.class.getName());
-    private static Debugger chat = new Debugger("Chat");
 
     public static void main(String args[]) {
-        /**
-         * Calculate the initial delay until 0 AM in GMT+2 (Germany)
-         */
+        /** Calculate the initial delay until 0 AM in GMT+2 (Germany) */
         LocalDateTime localNow = LocalDateTime.now();
         ZoneId currentZone = ZoneId.of("GMT+2");
         ZonedDateTime zonedNow = ZonedDateTime.of(localNow, currentZone);
