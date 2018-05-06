@@ -58,6 +58,20 @@ public class CustomCollectors {
                 CH_ID);
     }
 
+    public static Collector<Integer, ?, Integer> addition() {
+        return new CustomCollectorImpl<>(
+                () -> {
+                    return 0;
+                },
+                (left, right) -> {
+                    left = left + right;
+                },
+                (left, right) -> {
+                    return left + right;
+                },
+                CH_ID);
+    }
+
     static class CustomCollectorImpl<T, A, R> implements Collector<T, A, R> {
         private final Supplier<A> supplier;
         private final BiConsumer<A, T> accumulator;
