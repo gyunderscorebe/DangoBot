@@ -134,6 +134,13 @@ public class PropertiesMapper {
         values.get(key.toString()).remove(index);
     }
 
+    public void addAll(Object key, ArrayList<Object> values) {
+        values.forEach(v -> {
+            String t = v.toString();
+            this.values.get(key.toString()).add(t);
+        });
+    }
+
     public boolean containsValue(Object key, Object value) {
         if (values == null) {
             return false;

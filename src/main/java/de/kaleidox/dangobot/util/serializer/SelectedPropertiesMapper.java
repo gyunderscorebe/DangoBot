@@ -63,6 +63,10 @@ public class SelectedPropertiesMapper extends PropertiesMapper {
             return set(selected, index, value);
     }
 
+    public void addAll(ArrayList<Object> values) {
+        add(selected, values);
+    }
+
     public ArrayList<String> set(ArrayList<String> newValues) {
         return super.set(selected, newValues);
     }
