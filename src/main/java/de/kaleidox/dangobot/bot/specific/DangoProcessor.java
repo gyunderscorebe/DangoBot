@@ -105,6 +105,7 @@ public class DangoProcessor {
     public void increment(Message msg) {
         MessageAuthor userAuthor = msg.getAuthor();
         ServerTextChannel stc = msg.getServerTextChannel().get();
+        UserRecordProcessor userRecordProcessor = UserRecordProcessor.softGet(msg.getServer().get());
 
         if (userAuthor.isUser() && !userAuthor.isYourself()) {
             User usr = userAuthor.asUser().get();
@@ -114,7 +115,9 @@ public class DangoProcessor {
             settings.set(2, counter);
 
             if (counter.get() >= counterMax.get()) {
-                giveDango(usr, stc);
+                if (userRecordProcessor.decideDango(usr)) {
+                    giveDango(usr, stc);
+                }
             }
         }
     }
