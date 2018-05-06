@@ -83,7 +83,7 @@ public class ServerPreferences {
     }
 
     public enum Variable {
-        COMMAND_CHANNEL("command_channel", 0, "none", "((<#)[0-9]+(>)){1}", Long.class),
+        COMMAND_CHANNEL("command_channel", 0, "none", "((<#)?[0-9]+(>)?){1}", Long.class),
         ADVANCED_LEADERBOARD("advanced_leaderboard", 1, "true", "(true)|(false)", Boolean.class),
         ENABLE_REVOKE_VOTING("enable_revoke_voting", 2, "false", "(true)|(false)", Boolean.class);
 

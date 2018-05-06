@@ -48,11 +48,11 @@ public enum Command {
             Optional<Command> fromKeyword = Command.findFromKeyword(param.get(0));
 
             if (fromKeyword.isPresent()) {
-                stc.sendMessage(HelpLibrary.getHelp(fromKeyword.get()).map(HelpLibrary::getEmbed).orElse(DangoBot.getBasicEmbed()
+                stc.sendMessage(HelpLibrary.getHelp(fromKeyword.get()).map(HelpLibrary::getEmbed).orElse(DangoBot.getBasicEmbed(srv)
                         .addField("No Help found!", "No help found.")
                 ));
             } else {
-                stc.sendMessage(DangoBot.getBasicEmbed()
+                stc.sendMessage(DangoBot.getBasicEmbed(srv)
                         .addField("No Help found!", "No help found.")
                 );
             }
@@ -239,7 +239,7 @@ public enum Command {
         List<String> param = extractParam(msg);
 
         if (param.size() == 0) {
-            stc.sendMessage(DangoBot.getBasicEmbed()
+            stc.sendMessage(DangoBot.getBasicEmbed(srv)
                     .addField("Current Counter:", String.valueOf(dangoProcessor.getCounterMax()))
             );
         } else if (param.size() == 1) {
@@ -249,7 +249,7 @@ public enum Command {
                     dangoProcessor.setCounterMax(Integer.parseInt(param.get(0)));
                     SuccessState.SUCCESSFUL.evaluateForMessage(msg);
 
-                    stc.sendMessage(DangoBot.getBasicEmbed()
+                    stc.sendMessage(DangoBot.getBasicEmbed(srv)
                             .addField("New Counter:", String.valueOf(dangoProcessor.getCounterMax()))
                     );
                 } else if (val < 25) {
@@ -270,7 +270,7 @@ public enum Command {
         List<String> param = extractParam(msg);
 
         if (param.size() == 0) {
-            stc.sendMessage(DangoBot.getBasicEmbed()
+            stc.sendMessage(DangoBot.getBasicEmbed(srv)
                     .addField("Current Emoji:", dangoProcessor.getEmoji().getPrintable())
             );
         } else if (param.size() == 1) {
@@ -287,7 +287,7 @@ public enum Command {
             } finally {
                 SuccessState.SUCCESSFUL.evaluateForMessage(msg);
 
-                stc.sendMessage(DangoBot.getBasicEmbed()
+                stc.sendMessage(DangoBot.getBasicEmbed(srv)
                         .addField("New Emoji:", dangoProcessor.getEmoji().getPrintable())
                 );
             }
@@ -305,7 +305,7 @@ public enum Command {
         List<String> param = extractParam(msg);
 
         if (param.size() == 0) {
-            EmbedBuilder embed = DangoBot.getBasicEmbed()
+            EmbedBuilder embed = DangoBot.getBasicEmbed(srv)
                     .setDescription("Current Levelup-Actions:");
             StringBuilder field = new StringBuilder();
 
@@ -450,7 +450,7 @@ public enum Command {
 
         if (param.size() == 0) {
             // post preferences
-            EmbedBuilder basicEmbed = DangoBot.getBasicEmbed();
+            EmbedBuilder basicEmbed = DangoBot.getBasicEmbed(srv);
 
             Arrays.asList(ServerPreferences.Variable.values())
                     .forEach(variable -> {
@@ -539,7 +539,9 @@ public enum Command {
 
         if (msg.getAuthor().isBotOwner()) {
             chl.asServerTextChannel().ifPresent(stc -> {
-                // do stuff
+                List<Role> collect = new ArrayList<>(srv.getRolesOf(usr));
+
+                System.out.println(Optional.ofNullable(collect.get(collect.size()-1)));
             });
         }
     });
@@ -547,7 +549,8 @@ public enum Command {
     public static final HashSet<String> KEYWORDS = new HashSet<String>() {{
         add("dango");
         add("dangobot");
-        add(Main.API.getYourself().getMentionTag());
+        add(Main.SELF.getMentionTag());
+        add(Main.SELF.getNicknameMentionTag());
     }};
     public static final HashSet<Command> VALUES = new HashSet<Command>() {{
         this.addAll(Arrays.asList(Command.values()));
@@ -579,14 +582,14 @@ public enum Command {
     public static SuccessState processCommand(Message msg) {
         SuccessState val = SuccessState.NOT_RUN;
         Server srv = msg.getServer().get();
-        Channel chl = msg.getServerTextChannel().get();
+        ServerTextChannel chl = msg.getServerTextChannel().get();
         User usr = msg.getUserAuthor().get();
         List<String> parts = Collections.unmodifiableList(Arrays.asList(msg.getContent().split(" ")));
         ServerPreferences serverPreferences = ServerPreferences.softGet(srv);
         Optional<Command> myCommand = findFromKeyword(Utils.fromNullable(parts, 1));
 
         if (!msg.isPrivate()) {
-            if (serverPreferences.get(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.get(COMMAND_CHANNEL).asString().equals(chl.getIdAsString())) {
+            if (serverPreferences.get(COMMAND_CHANNEL).asString().equals("none") || serverPreferences.get(COMMAND_CHANNEL).asString().equals(chl.getMentionTag())) {
                 if (KEYWORDS.contains(parts.get(0).toLowerCase())) {
                     List<String> param = extractParam(msg);
 

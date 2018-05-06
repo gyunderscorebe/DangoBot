@@ -12,6 +12,7 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.MessageType;
 import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public final static ConcurrentHashMap<File, ConcurrentHashMap<String, String>> MAPS = new ConcurrentHashMap<>();
     public static DiscordApi API;
+    public static User SELF;
     public static DiscordBotListAPI DBLAPI;
     private static Debugger log = new Debugger(Main.class.getName());
     private static Debugger chat = new Debugger("Chat");
@@ -38,6 +40,7 @@ public class Main {
                 .login()
                 .thenAccept(api -> {
                     Main.API = api;
+                    Main.SELF = api.getYourself();
                     StatusScroll status = new StatusScroll(api);
                     DBLAPI.setStats(API.getYourself().getIdAsString(), API.getServers().size());
 

@@ -1,14 +1,22 @@
 package de.kaleidox.dangobot;
 
+import de.kaleidox.dangobot.util.Debugger;
 import de.kaleidox.dangobot.util.Utils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.permission.Role;
+import org.javacord.api.entity.server.Server;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class DangoBot {
-    public static final String VERSION_NUMBER = "1.7.1";
+    public static final String VERSION_NUMBER = "1.7.2";
     public static final boolean isTesting = System.getProperty("os.name").equals("Windows 10");
     public static final Long BOT_ID = 439082176537952267L;
     public static final Long DBL_BOT_ID = BOT_ID;
@@ -22,13 +30,31 @@ public final class DangoBot {
     private static final Long PERMISSION_STRING = 470248512L;
     public static final String INVITE_LINK = "https://discordapp.com/oauth2/authorize?client_id=" + BOT_ID + "&scope=bot&permissions=" + PERMISSION_STRING;
 
+    public static EmbedBuilder getBasicEmbed(Server forServer) {
+        List<Color> collect = forServer.getRolesOf(Main.SELF)
+                .stream()
+                .map(Role::getColor)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        return new EmbedBuilder()
+                .setFooter(BOT_NAME + " by " + OWNER_TAG)
+                .setAuthor(BOT_NAME, BOT_URL, ICON_URL)
+                .setTimestamp()
+                .setUrl(BOT_URL)
+                .setColor(collect.get(collect.size()-1)
+                );
+    }
+
     public static EmbedBuilder getBasicEmbed() {
         return new EmbedBuilder()
                 .setFooter(BOT_NAME + " by " + OWNER_TAG)
                 .setAuthor(BOT_NAME, BOT_URL, ICON_URL)
                 .setTimestamp()
                 .setUrl(BOT_URL)
-                .setColor(Utils.getRandomColor());
+                .setColor(Utils.getRandomColor()
+                );
     }
 
     private static String readFile(String name) {

@@ -4,7 +4,7 @@ public class Value {
     private String of;
     private Class type;
 
-    Value(String of, Class ofType) {
+    public Value(String of, Class ofType) {
         this.of = of;
         this.type = ofType;
     }
