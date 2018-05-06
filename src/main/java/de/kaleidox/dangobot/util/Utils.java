@@ -1,12 +1,8 @@
 package de.kaleidox.dangobot.util;
 
 
-import org.javacord.api.entity.emoji.Emoji;
-import org.javacord.api.entity.message.Message;
-
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,51 +25,11 @@ public final class Utils {
         return null;
     }
 
-    public static <T> ArrayList<T> arrayToArrayList(T[] oldArray) {
-        return new ArrayList<>(Arrays.asList(oldArray));
-    }
-
-    public static void evaluateState(Message msg, SuccessState state) {
-        switch (state) {
-            case SUCCESSFUL:
-                msg.addReaction("✅");
-                break;
-            case UNSUCCESSFUL:
-                msg.addReaction("❓");
-                break;
-            case ERRORED:
-                msg.addReaction("❌");
-                break;
-            case UNAUTHORIZED:
-                msg.addReaction("⛔");
-                break;
-            default:
-                break;
-        }
-    }
-
     public static void sleep(Long milis) {
         try {
             Thread.sleep(milis);
         } catch (InterruptedException e) {
             log.put("Sleep Interrupted.");
-        }
-    }
-
-    public static void addWastebasket(Message msg) {
-        if (msg.getAuthor().isYourself() && !msg.getPrivateChannel().isPresent()) {
-            msg.addReaction("🗑");
-            msg.addReactionAddListener(reaAdd -> {
-                Emoji emoji = reaAdd.getEmoji();
-
-                if (!reaAdd.getUser().isBot()) {
-                    emoji.asUnicodeEmoji().ifPresent(then -> {
-                        if (then.equals("🗑")) {
-                            msg.delete();
-                        }
-                    });
-                }
-            });
         }
     }
 
@@ -111,6 +67,10 @@ public final class Utils {
         return ThreadLocalRandom.current().nextInt(from, to);
     }
 
+    public static double random(double from, double to) {
+        return ThreadLocalRandom.current().nextDouble(from, to);
+    }
+
     public static boolean isNumeric(String e) {
         return e.matches("[0-9]+");
     }
@@ -138,8 +98,8 @@ public final class Utils {
         return val;
     }
 
-    public static <K, V, T, G> HashMap<T, G> reformatMap(Map<K, V> map, Function<K, T> keyFormatter, Function<V, G> valueFormatter) {
-        HashMap<T, G> val = new HashMap<>();
+    private static <A, B, X, Y> HashMap<X, Y> reformat(Map<A, B> map, Function<A, X> keyFormatter, Function<B, Y> valueFormatter) {
+        HashMap<X, Y> val = new HashMap<>();
 
         map.forEach((key, value) -> {
             val.put(
@@ -147,6 +107,14 @@ public final class Utils {
                     valueFormatter.apply(value)
             );
         });
+
+        return val;
+    }
+
+    public static <A, X> ArrayList<X> reformat(ArrayList<A> list, Function<A, X> formatter) {
+        ArrayList<X> val = new ArrayList<>();
+
+        list.forEach(e -> val.add(formatter.apply(e)));
 
         return val;
     }
