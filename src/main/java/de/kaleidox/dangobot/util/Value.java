@@ -41,6 +41,13 @@ public class Value {
             return 0;
     }
 
+    public double asDouble() {
+        if (type == Double.class)
+            return Double.parseDouble(of);
+        else
+            return 0;
+    }
+
     @Override
     public String toString() {
         return of;
