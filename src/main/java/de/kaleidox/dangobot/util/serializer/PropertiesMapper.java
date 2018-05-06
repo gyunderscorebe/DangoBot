@@ -113,7 +113,16 @@ public class PropertiesMapper {
     }
 
     public List<String> getAll(Object fromKey) {
-        return values.get(fromKey.toString());
+        List<String> val = null;
+
+        if (values.containsKey(fromKey)) {
+            val = values.get(fromKey.toString());
+        } else {
+            val = new ArrayList<>();
+            values.put(fromKey.toString(), val);
+        }
+
+        return val;
     }
 
     public PropertiesMapper clear(Object key) {
