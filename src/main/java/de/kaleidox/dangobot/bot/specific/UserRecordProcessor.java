@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static de.kaleidox.dangobot.bot.specific.UserRecordProcessor.Variable.AVERAGE_MSG_LENGTH;
@@ -54,6 +55,11 @@ public class UserRecordProcessor {
             }
         }
         this.defaultEntry = new PropertiesMapper(defaultEntry, ';');
+
+        this.defaultEntry.add("average_msg_length", "0.0");
+        this.defaultEntry.add("average_msg_per_day", "0.0");
+        this.defaultEntry.add("counted_msg_today", "0");
+        this.defaultEntry.add("total_msg_length", "0");
 
         Utils.safePut(selfMap, server, this);
     }
