@@ -539,9 +539,7 @@ public enum Command {
 
         if (msg.getAuthor().isBotOwner()) {
             chl.asServerTextChannel().ifPresent(stc -> {
-                List<Role> collect = new ArrayList<>(srv.getRolesOf(usr));
 
-                System.out.println(Optional.ofNullable(collect.get(collect.size()-1)));
             });
         }
     });
