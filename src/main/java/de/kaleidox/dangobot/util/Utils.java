@@ -13,12 +13,12 @@ import java.util.function.Function;
 public final class Utils {
     private static Debugger log = new Debugger(Utils.class.getName());
 
-    public static <U> U fromNullable(List<U> parts, int index) {
+    public static <U> U fromNullable(List<U> parts, int index, U valueIfAbsent) {
         if (parts.size() >= index) {
             try {
                 return parts.get(index);
             } catch (NullPointerException | IndexOutOfBoundsException e) {
-                // nothing
+                return valueIfAbsent;
             }
         }
 
@@ -111,7 +111,7 @@ public final class Utils {
         return val;
     }
 
-    public static <A, X> ArrayList<X> reformat(ArrayList<A> list, Function<A, X> formatter) {
+    public static <A, X> ArrayList<X> reformat(List<A> list, Function<A, X> formatter) {
         ArrayList<X> val = new ArrayList<>();
 
         list.forEach(e -> val.add(formatter.apply(e)));
