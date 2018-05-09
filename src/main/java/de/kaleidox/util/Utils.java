@@ -154,7 +154,7 @@ public final class Utils {
         else {
             // TODO implement a better way
 
-            return Long.parseLong(o.substring(o.indexOf("#")+1, o.indexOf(">")-1));
+            return Long.parseLong(o.substring(o.indexOf("#") + 1, o.indexOf(">") - 1));
         }
     }
 }

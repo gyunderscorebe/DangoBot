@@ -84,7 +84,7 @@ public class ServerPreferences {
     }
 
     public enum Variable {
-        COMMAND_CHANNEL("command_channel", 0, "none", "((<#)?[0-9]+(>)?){1}", Long.class){
+        COMMAND_CHANNEL("command_channel", 0, "none", "((<#)?[0-9]+(>)?){1}", Long.class) {
             private boolean accepts(String value) {
                 return Main.API.getChannelById(value).isPresent();
             }

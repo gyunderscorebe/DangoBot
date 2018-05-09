@@ -240,80 +240,82 @@ public class DangoProcessor {
 
     public SuccessState sendScoreboard(ServerTextChannel stc, boolean editOld) {
         AtomicReference<SuccessState> val = new AtomicReference<>(SuccessState.NOT_RUN);
-
-        TreeMap<Integer, ArrayList<User>> resultList = new TreeMap<>();
         Server srv = stc.getServer();
 
-        for (Map.Entry<String, List<String>> entry : rankings.getValues().entrySet()) {
-            String key = entry.getKey();
-            List<String> value = entry.getValue();
-            int thisLevel = Integer.parseInt(value.get(0));
+        leaderboard = PagedMessage.get(stc, () -> {
+            int totalDangos = 0, thisAmount;
 
-            try {
-                log.put("Find user: [" + key + "]", true);
+            for (Map.Entry<String, String> entry : rankings.getMap().entrySet()) {
+                thisAmount = Integer.parseInt(entry.getValue());
 
-                User user = Main.API
-                        .getUserById(key)
-                        .get(10, TimeUnit.SECONDS);
-
-                if (resultList.containsKey(thisLevel)) {
-                    resultList.get(thisLevel).add(user);
-                } else {
-                    ArrayList<User> newList = new ArrayList<>();
-
-                    newList.add(user);
-                    if (thisLevel > 0) {
-                        resultList.put(thisLevel, newList);
-                    }
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                log.put(e.getMessage());
-
-                val.set(SuccessState.ERRORED.withMessage("There was an error finding the User [" + key + "].\n" +
-                        "Please Contact the bot author " + DangoBot.OWNER_TAG + "."));
-            } catch (TimeoutException e) {
-                log.put("Could not find User by ID: " + key);
-
-                val.set(SuccessState.ERRORED.withMessage("Could not find User by ID [" + key + "] within the timeout."));
+                totalDangos = totalDangos + thisAmount;
             }
-        }
-        int totalDangos = 0, thisAmount;
 
-        for (Map.Entry<String, String> entry : rankings.getMap().entrySet()) {
-            thisAmount = Integer.parseInt(entry.getValue());
+            return new StringBuilder()
+                    .append(emoji.getPrintable())
+                    .append(emoji.getPrintable())
+                    .append("\t")
+                    .append("__")
+                    .append("**Scores for ")
+                    .append(srv.getName())
+                    .append(":**")
+                    .append("__")
+                    .append("\t")
+                    .append(emoji.getPrintable())
+                    .append(emoji.getPrintable())
+                    .append("\n")
+                    .append("\n")
+                    .append("**Total ")
+                    .append(emoji.getPrintable())
+                    .append(": ")
+                    .append(totalDangos)
+                    .append("**")
+                    .append("\n")
+                    .append("Giving a new ")
+                    .append(emoji.getPrintable())
+                    .append(" every ")
+                    .append(this.counterMax)
+                    .append(" Messages.")
+                    .append("\n")
+                    .append("\n")
+                    .toString();
+        }, () -> {
+            TreeMap<Integer, ArrayList<User>> resultList = new TreeMap<>();
 
-            totalDangos = totalDangos + thisAmount;
-        }
+            for (Map.Entry<String, List<String>> entry : rankings.getValues().entrySet()) {
+                String key = entry.getKey();
+                List<String> value = entry.getValue();
+                int thisLevel = Integer.parseInt(value.get(0));
 
-        int finalTotalDangos = totalDangos;
-        leaderboard = PagedMessage.get(stc, () -> new StringBuilder()
-                .append(emoji.getPrintable())
-                .append(emoji.getPrintable())
-                .append("\t")
-                .append("__")
-                .append("**Scores for ")
-                .append(srv.getName())
-                .append(":**")
-                .append("__")
-                .append("\t")
-                .append(emoji.getPrintable())
-                .append(emoji.getPrintable())
-                .append("\n")
-                .append("\n")
-                .append("**Total ")
-                .append(emoji.getPrintable())
-                .append(": ")
-                .append(finalTotalDangos)
-                .append("**")
-                .append("\n")
-                .append("Giving a new ")
-                .append(emoji.getPrintable())
-                .append(" every ")
-                .append(this.counterMax)
-                .append(" Messages.")
-                .append("\n")
-                .append("\n")
-                .toString(), () -> {
+                try {
+                    log.put("Find user: [" + key + "]", true);
+
+                    User user = Main.API
+                            .getUserById(key)
+                            .get(10, TimeUnit.SECONDS);
+
+                    if (resultList.containsKey(thisLevel)) {
+                        resultList.get(thisLevel).add(user);
+                    } else {
+                        ArrayList<User> newList = new ArrayList<>();
+
+                        newList.add(user);
+                        if (thisLevel > 0) {
+                            resultList.put(thisLevel, newList);
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    log.put(e.getMessage());
+
+                    val.set(SuccessState.ERRORED.withMessage("There was an error finding the User [" + key + "].\n" +
+                            "Please Contact the bot author " + DangoBot.OWNER_TAG + "."));
+                } catch (TimeoutException e) {
+                    log.put("Could not find User by ID: " + key);
+
+                    val.set(SuccessState.ERRORED.withMessage("Could not find User by ID [" + key + "] within the timeout."));
+                }
+            }
+
             AtomicInteger lastKey = new AtomicInteger(-1);
             AtomicInteger place = new AtomicInteger(0);
             StringBuilder value = new StringBuilder();
