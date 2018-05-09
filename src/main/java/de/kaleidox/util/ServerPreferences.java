@@ -1,5 +1,6 @@
 package de.kaleidox.util;
 
+import de.kaleidox.dangobot.Main;
 import de.kaleidox.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.server.Server;
 
@@ -49,7 +50,7 @@ public class ServerPreferences {
 
     public SuccessState set(Variable variable, Object value) {
         if (variable.accepts(value.toString())) {
-            settings.set(variable.position, value);
+            settings.set(variable.position, variable.convert(value.toString()));
             settings.write();
 
             return SuccessState.SUCCESSFUL;
@@ -83,7 +84,15 @@ public class ServerPreferences {
     }
 
     public enum Variable {
-        COMMAND_CHANNEL("command_channel", 0, "none", "((<#)?[0-9]+(>)?){1}", Long.class),
+        COMMAND_CHANNEL("command_channel", 0, "none", "((<#)?[0-9]+(>)?){1}", Long.class){
+            private boolean accepts(String value) {
+                return Main.API.getChannelById(value).isPresent();
+            }
+
+            private String convert(String old) {
+                return String.valueOf(Utils.extractId(old));
+            }
+        },
         ADVANCED_LEADERBOARD("advanced_leaderboard", 1, "true", "(true)|(false)", Boolean.class),
         ENABLE_REVOKE_VOTING("enable_revoke_voting", 2, "false", "(true)|(false)", Boolean.class);
 
@@ -109,6 +118,10 @@ public class ServerPreferences {
 
         private boolean accepts(String value) {
             return value.matches(this.accepts);
+        }
+
+        private String convert(String old) {
+            return old;
         }
     }
 }

@@ -145,4 +145,16 @@ public final class Utils {
 
         return val[0];
     }
+
+    public static long extractId(Object from) {
+        String o = from.toString();
+
+        if (o.matches("[0-9]+"))
+            return Long.parseLong(o);
+        else {
+            // TODO implement a better way
+
+            return Long.parseLong(o.substring(o.indexOf("#")+1, o.indexOf(">")-1));
+        }
+    }
 }
