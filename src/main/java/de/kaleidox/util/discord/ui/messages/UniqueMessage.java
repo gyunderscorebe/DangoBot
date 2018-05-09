@@ -1,4 +1,4 @@
-package de.kaleidox.util.discord.ui;
+package de.kaleidox.util.discord.ui.messages;
 
 import de.kaleidox.util.Emoji;
 import de.kaleidox.util.listeners.MessageListeners;
@@ -19,32 +19,29 @@ public class UniqueMessage {
     private Supplier<String> refresher;
 
     private Message lastMessage = null;
-    private ReactionAddListener refreshListenerAdd;
-    private ReactionRemoveListener refreshListenerRem;
+
+    private final ReactionAddListener refreshListenerAdd = event -> {
+        if (!event.getUser().isYourself()) {
+            Emoji emoji = new Emoji(event.getEmoji());
+
+            if (emoji.getPrintable().equals(REFRESH_EMOJI)) {
+                this.refresh();
+            }
+        }
+    };
+    private final ReactionRemoveListener refreshListenerRem = event -> {
+        if (!event.getUser().isYourself()) {
+            Emoji emoji = new Emoji(event.getEmoji());
+
+            if (emoji.getPrintable().equals(REFRESH_EMOJI)) {
+                this.refresh();
+            }
+        }
+    };
 
     private UniqueMessage(Messageable inParent, Supplier<String> refresher) {
         this.parent = inParent;
         this.refresher = refresher;
-
-        refreshListenerAdd = event -> {
-            if (!event.getUser().isYourself()) {
-                Emoji emoji = new Emoji(event.getEmoji());
-
-                if (emoji.getPrintable().equals(REFRESH_EMOJI)) {
-                    this.refresh();
-                }
-            }
-        };
-
-        refreshListenerRem = event -> {
-            if (!event.getUser().isYourself()) {
-                Emoji emoji = new Emoji(event.getEmoji());
-
-                if (emoji.getPrintable().equals(REFRESH_EMOJI)) {
-                    this.refresh();
-                }
-            }
-        };
 
         inParent.sendMessage(refresher.get())
                 .thenAcceptAsync(msg -> {

@@ -8,7 +8,7 @@ import de.kaleidox.util.Emoji;
 import de.kaleidox.util.ServerPreferences;
 import de.kaleidox.util.SuccessState;
 import de.kaleidox.util.Utils;
-import de.kaleidox.util.discord.ui.UniqueMessage;
+import de.kaleidox.util.discord.ui.messages.PagedMessage;
 import de.kaleidox.util.serializer.PropertiesMapper;
 import de.kaleidox.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -45,7 +45,7 @@ public class DangoProcessor {
     private Emoji emoji;
     private LastDango lastDango;
     private ServerPreferences preferences;
-    private UniqueMessage leaderboard = null;
+    private PagedMessage leaderboard = null;
 
     private DangoProcessor(Server server) {
         this.myServer = server;
@@ -241,86 +241,85 @@ public class DangoProcessor {
     public SuccessState sendScoreboard(ServerTextChannel stc, boolean editOld) {
         AtomicReference<SuccessState> val = new AtomicReference<>(SuccessState.NOT_RUN);
 
-        leaderboard = UniqueMessage.get(stc, () -> {
-            StringBuilder give = new StringBuilder();
+        TreeMap<Integer, ArrayList<User>> resultList = new TreeMap<>();
+        Server srv = stc.getServer();
 
-            TreeMap<Integer, ArrayList<User>> resultList = new TreeMap<>();
-            Server srv = stc.getServer();
-            DangoProcessor dangoProcessor = DangoProcessor.softGet(srv);
+        for (Map.Entry<String, List<String>> entry : rankings.getValues().entrySet()) {
+            String key = entry.getKey();
+            List<String> value = entry.getValue();
+            int thisLevel = Integer.parseInt(value.get(0));
 
-            for (Map.Entry<String, List<String>> entry : rankings.getValues().entrySet()) {
-                String key = entry.getKey();
-                List<String> value = entry.getValue();
-                int thisLevel = Integer.parseInt(value.get(0));
+            try {
+                log.put("Find user: [" + key + "]", true);
 
-                try {
-                    log.put("Find user: [" + key + "]", true);
+                User user = Main.API
+                        .getUserById(key)
+                        .get(10, TimeUnit.SECONDS);
 
-                    User user = Main.API
-                            .getUserById(key)
-                            .get(10, TimeUnit.SECONDS);
+                if (resultList.containsKey(thisLevel)) {
+                    resultList.get(thisLevel).add(user);
+                } else {
+                    ArrayList<User> newList = new ArrayList<>();
 
-                    if (resultList.containsKey(thisLevel)) {
-                        resultList.get(thisLevel).add(user);
-                    } else {
-                        ArrayList<User> newList = new ArrayList<>();
-
-                        newList.add(user);
-                        if (thisLevel > 0) {
-                            resultList.put(thisLevel, newList);
-                        }
+                    newList.add(user);
+                    if (thisLevel > 0) {
+                        resultList.put(thisLevel, newList);
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    log.put(e.getMessage());
-
-                    val.set(SuccessState.ERRORED.withMessage("There was an error finding the User [" + key + "].\n" +
-                            "Please Contact the bot author " + DangoBot.OWNER_TAG + "."));
-                } catch (TimeoutException e) {
-                    log.put("Could not find User by ID: " + key);
-
-                    val.set(SuccessState.ERRORED.withMessage("Could not find User by ID [" + key + "] within the timeout."));
                 }
+            } catch (InterruptedException | ExecutionException e) {
+                log.put(e.getMessage());
+
+                val.set(SuccessState.ERRORED.withMessage("There was an error finding the User [" + key + "].\n" +
+                        "Please Contact the bot author " + DangoBot.OWNER_TAG + "."));
+            } catch (TimeoutException e) {
+                log.put("Could not find User by ID: " + key);
+
+                val.set(SuccessState.ERRORED.withMessage("Could not find User by ID [" + key + "] within the timeout."));
             }
+        }
 
-            AtomicInteger maxRuntime = new AtomicInteger(resultList.size());
-            AtomicInteger lastKey = new AtomicInteger(-1);
-            AtomicInteger place = new AtomicInteger(0);
-            StringBuilder message = new StringBuilder();
-            int totalDangos = 0, thisAmount = 0;
+        AtomicInteger maxRuntime = new AtomicInteger(resultList.size());
+        AtomicInteger lastKey = new AtomicInteger(-1);
+        AtomicInteger place = new AtomicInteger(0);
+        StringBuilder message = new StringBuilder();
+        int totalDangos = 0, thisAmount;
 
-            for (Map.Entry<String, String> entry : rankings.getMap().entrySet()) {
-                thisAmount = Integer.parseInt(entry.getValue());
+        for (Map.Entry<String, String> entry : rankings.getMap().entrySet()) {
+            thisAmount = Integer.parseInt(entry.getValue());
 
-                totalDangos = totalDangos + thisAmount;
-            }
+            totalDangos = totalDangos + thisAmount;
+        }
 
-            message
-                    .append(emoji.getPrintable())
-                    .append(emoji.getPrintable())
-                    .append("\t")
-                    .append("__")
-                    .append("**Scores for ")
-                    .append(srv.getName())
-                    .append(":**")
-                    .append("__")
-                    .append("\t")
-                    .append(emoji.getPrintable())
-                    .append(emoji.getPrintable())
-                    .append("\n")
-                    .append("\n")
-                    .append("**Total ")
-                    .append(emoji.getPrintable())
-                    .append(": ")
-                    .append(totalDangos)
-                    .append("**")
-                    .append("\n")
-                    .append("Giving a new ")
-                    .append(emoji.getPrintable())
-                    .append(" every ")
-                    .append(dangoProcessor.counterMax)
-                    .append(" Messages.")
-                    .append("\n")
-                    .append("\n");
+        int finalTotalDangos = totalDangos;
+        leaderboard = PagedMessage.get(stc, () -> new StringBuilder()
+                .append(emoji.getPrintable())
+                .append(emoji.getPrintable())
+                .append("\t")
+                .append("__")
+                .append("**Scores for ")
+                .append(srv.getName())
+                .append(":**")
+                .append("__")
+                .append("\t")
+                .append(emoji.getPrintable())
+                .append(emoji.getPrintable())
+                .append("\n")
+                .append("\n")
+                .append("**Total ")
+                .append(emoji.getPrintable())
+                .append(": ")
+                .append(finalTotalDangos)
+                .append("**")
+                .append("\n")
+                .append("Giving a new ")
+                .append(emoji.getPrintable())
+                .append(" every ")
+                .append(this.counterMax)
+                .append(" Messages.")
+                .append("\n")
+                .append("\n")
+                .toString(), () -> {
+            StringBuilder value = new StringBuilder();
 
             if (resultList.size() != 0) {
                 resultList.descendingMap()
@@ -331,7 +330,7 @@ public class DangoProcessor {
                             }
 
                             if (lastKey.get() == level) {
-                                message.append("**`")
+                                value.append("**`")
                                         .append(place)
                                         .append(".` ")
                                         .append(level)
@@ -341,36 +340,25 @@ public class DangoProcessor {
                             }
 
                             users.forEach(user -> {
-                                message.append(user.getNickname(srv)
+                                value.append(user.getNickname(srv)
                                         .orElseGet(user::getName)
                                 )
                                         .append(", ");
                             });
 
-                            message.reverse()
+                            value.reverse()
                                     .delete(1, 2)
                                     .reverse()
                                     .append("\n");
-
-                            if (preferences.get(ServerPreferences.Variable.ADVANCED_LEADERBOARD).asBoolean()) {
-                                // TODO Use Pinning and Unpinning
-                                if (maxRuntime.decrementAndGet() == 0) {
-                                    give.append(message.toString());
-                                }
-                            } else {
-                                give.append(message.toString());
-                            }
                         });
             } else {
-                message.append("**Oops!**")
+                value.append("**Oops!**")
                         .append("\n")
                         .append("\n")
                         .append("There are no Scores for this Server, get the chatter going!");
-
-                give.append(message.toString());
             }
 
-            return give.toString();
+            return value.toString();
         });
 
         return val.get();
