@@ -10,6 +10,7 @@ import org.javacord.api.listener.message.reaction.ReactionRemoveListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -74,7 +75,6 @@ public class PagedMessage {
 
         this.page = 0;
 
-        refreshPages();
         resend();
     }
 
@@ -93,6 +93,15 @@ public class PagedMessage {
                     )
             );
         }
+    }
+
+    public final static Optional<PagedMessage> get(Messageable forParent) {
+        if (selfMap.containsKey(forParent)) {
+            PagedMessage val = selfMap.get(forParent);
+            val.resend();
+
+            return Optional.of(val);
+        } else return Optional.empty();
     }
 
     public void refresh() {

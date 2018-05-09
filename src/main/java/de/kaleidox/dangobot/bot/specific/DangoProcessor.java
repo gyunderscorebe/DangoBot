@@ -277,11 +277,6 @@ public class DangoProcessor {
                 val.set(SuccessState.ERRORED.withMessage("Could not find User by ID [" + key + "] within the timeout."));
             }
         }
-
-        AtomicInteger maxRuntime = new AtomicInteger(resultList.size());
-        AtomicInteger lastKey = new AtomicInteger(-1);
-        AtomicInteger place = new AtomicInteger(0);
-        StringBuilder message = new StringBuilder();
         int totalDangos = 0, thisAmount;
 
         for (Map.Entry<String, String> entry : rankings.getMap().entrySet()) {
@@ -319,6 +314,8 @@ public class DangoProcessor {
                 .append("\n")
                 .append("\n")
                 .toString(), () -> {
+            AtomicInteger lastKey = new AtomicInteger(-1);
+            AtomicInteger place = new AtomicInteger(0);
             StringBuilder value = new StringBuilder();
 
             if (resultList.size() != 0) {
