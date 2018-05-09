@@ -124,5 +124,12 @@ public class Main {
                     }, 1, 1, TimeUnit.MINUTES); // Update DBL server Count every Minute
                     api.getThreadPool().getScheduler().scheduleAtFixedRate(DangoProcessor::updateScoreboards, 30, 30, TimeUnit.MINUTES); // update old leaderboards
                 });
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // TODO Perform killing tasks here
+
+            log.put("Shutting down!");
+        }));
+
     }
 }
