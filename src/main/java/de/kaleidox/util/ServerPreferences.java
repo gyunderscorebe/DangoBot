@@ -1,6 +1,6 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
-import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
+import de.kaleidox.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.server.Server;
 
 import java.io.File;

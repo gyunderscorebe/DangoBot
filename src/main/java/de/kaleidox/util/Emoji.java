@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
 import com.vdurmont.emoji.EmojiParser;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;

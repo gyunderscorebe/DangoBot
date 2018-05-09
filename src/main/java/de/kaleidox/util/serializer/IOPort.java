@@ -1,6 +1,6 @@
-package de.kaleidox.dangobot.util.serializer;
+package de.kaleidox.util.serializer;
 
-import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.util.Debugger;
 
 import java.io.File;
 import java.io.FileInputStream;

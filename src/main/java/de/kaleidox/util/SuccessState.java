@@ -1,7 +1,7 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
 import de.kaleidox.dangobot.DangoBot;
-import de.kaleidox.dangobot.discord.ui.Response;
+import de.kaleidox.util.discord.ui.Response;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 

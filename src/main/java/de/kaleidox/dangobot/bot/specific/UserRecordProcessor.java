@@ -1,12 +1,11 @@
 package de.kaleidox.dangobot.bot.specific;
 
 import de.kaleidox.dangobot.DangoBot;
-import de.kaleidox.dangobot.util.CustomCollectors;
-import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.ObjectVariableEnum;
-import de.kaleidox.dangobot.util.Utils;
-import de.kaleidox.dangobot.util.Value;
-import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
+import de.kaleidox.util.Debugger;
+import de.kaleidox.util.ObjectVariableEnum;
+import de.kaleidox.util.Utils;
+import de.kaleidox.util.Value;
+import de.kaleidox.util.serializer.PropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -85,11 +84,22 @@ public class UserRecordProcessor {
         });
     }
 
-    public boolean decideDango(User usr) {
-        int random = Utils.random(0, 100);
+    public boolean decideDango(User usr, ServerTextChannel stc, DangoProcessor.LastDango lastDango) {
+        int random = Utils.random(0, 100); // Creates a Random Number between 0 and 100
+        double decision = 100; // Sets a deciding number to 100
         PropertiesMapper userEntry = createOrGetUserEntry(usr);
+        Double msgLength = AVERAGE_MSG_LENGTH.getValueFor(userEntry).asDouble(); // Get the average message length of a user
 
-        return true; // TODO dango decider term
+        msgLength = msgLength / 40; // Divide the average message length by 40
+
+        if (msgLength > 0)
+            decision = decision * msgLength; // If the message length now is over 0, multiply it with the message length
+
+        if (lastDango != null)
+            if (lastDango.user.equals(usr))
+                decision = decision - 0.2; // if you did get the last dango, 0.2 are removed from your theoretical chance of getting a dango
+
+        return decision > random; // if your chance (decision) is higher than the random number, you get a dango
     }
 
     public void newMessage(MessageCreateEvent event) {
@@ -108,8 +118,7 @@ public class UserRecordProcessor {
 
                     int newTotalMsgLength = totalMsgLength + thisLength;
                     Double newLenAvg = (double) newTotalMsgLength / (double) todayCounted;
-                    Double newDayAvg = (double) weekCounts.stream()
-                            .collect(CustomCollectors.addition()) / (double) 7;
+                    Double newDayAvg = (double) Utils.addAllTogether(weekCounts) / (double) 7;
 
                     TOTAL_MSG_LENGTH.setValueFor(userEntry, newTotalMsgLength);
                     AVG_MSG_PER_DAY.setValueFor(userEntry, newDayAvg);
@@ -203,7 +212,7 @@ public class UserRecordProcessor {
                 ArrayList<Integer> weekCounts = Utils.reformat(MSG_COUNTS_LAST_WEEK.getValuesFor(mapper), Value::asInteger);
                 ArrayList<Integer> newWeekCounts = new ArrayList<>();
 
-                for (int i = 0; i < weekCounts.size(); i++) {
+                for (int i = 0; i < 7; i++) {
                     if (i == index) {
                         newWeekCounts.add(value);
                     } else {

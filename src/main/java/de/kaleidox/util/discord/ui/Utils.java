@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.discord.ui;
+package de.kaleidox.util.discord.ui;
 
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;

@@ -6,13 +6,13 @@ import de.kaleidox.dangobot.bot.libraries.EmbedLibrary;
 import de.kaleidox.dangobot.bot.libraries.HelpLibrary;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.bot.specific.UserRecordProcessor;
-import de.kaleidox.dangobot.discord.ui.Response;
-import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.Emoji;
-import de.kaleidox.dangobot.util.ServerPreferences;
-import de.kaleidox.dangobot.util.SuccessState;
-import de.kaleidox.dangobot.util.Utils;
-import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
+import de.kaleidox.util.Debugger;
+import de.kaleidox.util.Emoji;
+import de.kaleidox.util.ServerPreferences;
+import de.kaleidox.util.SuccessState;
+import de.kaleidox.util.Utils;
+import de.kaleidox.util.discord.ui.Response;
+import de.kaleidox.util.serializer.PropertiesMapper;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.emoji.CustomEmoji;
@@ -32,7 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static de.kaleidox.dangobot.util.ServerPreferences.Variable.COMMAND_CHANNEL;
+import static de.kaleidox.util.ServerPreferences.Variable.COMMAND_CHANNEL;
 
 public enum Command {
     // Enum Stuff
@@ -561,7 +561,6 @@ public enum Command {
 
         if (msg.getAuthor().isBotOwner()) {
             chl.asServerTextChannel().ifPresent(stc -> {
-
             });
         }
     });

@@ -4,7 +4,7 @@ import de.kaleidox.dangobot.bot.Command;
 import de.kaleidox.dangobot.bot.StatusScroll;
 import de.kaleidox.dangobot.bot.specific.DangoProcessor;
 import de.kaleidox.dangobot.bot.specific.UserRecordProcessor;
-import de.kaleidox.dangobot.util.Debugger;
+import de.kaleidox.util.Debugger;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -92,8 +92,8 @@ public class Main {
 
                             Command.processCommand(msg);
                             if (author.isUser()) {
-                                DangoProcessor.softGet(srv).increment(msg);
                                 if (srv.getId() != 264445053596991498L) {
+                                    DangoProcessor.softGet(srv).increment(msg);
                                     UserRecordProcessor.softGet(srv).newMessage(event);
                                 }
                             }

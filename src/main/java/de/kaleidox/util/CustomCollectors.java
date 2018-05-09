@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,20 +54,6 @@ public class CustomCollectors {
                 (left, right) -> {
                     left.addAll(right);
                     return left;
-                },
-                CH_ID);
-    }
-
-    public static Collector<Integer, ?, Integer> addition() {
-        return new CustomCollectorImpl<>(
-                () -> {
-                    return 0;
-                },
-                (left, right) -> {
-                    left = left + right;
-                },
-                (left, right) -> {
-                    return left + right;
                 },
                 CH_ID);
     }

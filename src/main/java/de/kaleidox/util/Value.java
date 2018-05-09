@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
 public class Value {
     private String of;

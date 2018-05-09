@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
 import de.kaleidox.dangobot.DangoBot;
 

@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.util;
+package de.kaleidox.util;
 
 
 import java.awt.*;
@@ -134,5 +134,15 @@ public final class Utils {
             return map.put(key, value);
         else
             return map.replace(key, value);
+    }
+
+    public static int addAllTogether(List<Integer> weekCounts) {
+        final int[] val = {0};
+
+        weekCounts.forEach(i -> {
+            val[0] = val[0] + i;
+        });
+
+        return val[0];
     }
 }

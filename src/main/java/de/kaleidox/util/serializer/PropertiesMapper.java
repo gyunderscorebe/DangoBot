@@ -1,8 +1,8 @@
-package de.kaleidox.dangobot.util.serializer;
+package de.kaleidox.util.serializer;
 
-import de.kaleidox.dangobot.util.CustomCollectors;
-import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.Utils;
+import de.kaleidox.util.CustomCollectors;
+import de.kaleidox.util.Debugger;
+import de.kaleidox.util.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,6 +26,10 @@ public class PropertiesMapper {
 
     public PropertiesMapper(File file) {
         this(IOPort.mapPort(file), ';');
+    }
+
+    public PropertiesMapper(String filePath) {
+        this(IOPort.mapPort(new File(filePath)), ';');
     }
 
     public PropertiesMapper(File file, Character splitWith) {

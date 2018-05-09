@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.util.serializer;
+package de.kaleidox.util.serializer;
 
 import java.io.File;
 import java.util.ArrayList;

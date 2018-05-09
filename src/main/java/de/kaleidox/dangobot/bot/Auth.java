@@ -2,11 +2,11 @@ package de.kaleidox.dangobot.bot;
 
 import de.kaleidox.dangobot.DangoBot;
 import de.kaleidox.dangobot.Main;
-import de.kaleidox.dangobot.util.Debugger;
-import de.kaleidox.dangobot.util.SuccessState;
-import de.kaleidox.dangobot.util.Utils;
-import de.kaleidox.dangobot.util.serializer.PropertiesMapper;
-import de.kaleidox.dangobot.util.serializer.SelectedPropertiesMapper;
+import de.kaleidox.util.Debugger;
+import de.kaleidox.util.SuccessState;
+import de.kaleidox.util.Utils;
+import de.kaleidox.util.serializer.PropertiesMapper;
+import de.kaleidox.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.PermissionType;
@@ -17,9 +17,9 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static de.kaleidox.dangobot.util.SuccessState.NOT_RUN;
-import static de.kaleidox.dangobot.util.SuccessState.SUCCESSFUL;
-import static de.kaleidox.dangobot.util.SuccessState.UNSUCCESSFUL;
+import static de.kaleidox.util.SuccessState.NOT_RUN;
+import static de.kaleidox.util.SuccessState.SUCCESSFUL;
+import static de.kaleidox.util.SuccessState.UNSUCCESSFUL;
 
 public class Auth {
     private static final ConcurrentHashMap<Long, Auth> selfMap = new ConcurrentHashMap<>();

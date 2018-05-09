@@ -1,4 +1,4 @@
-package de.kaleidox.dangobot.discord.ui;
+package de.kaleidox.util.discord.ui;
 
 import com.vdurmont.emoji.EmojiParser;
 import de.kaleidox.dangobot.DangoBot;
