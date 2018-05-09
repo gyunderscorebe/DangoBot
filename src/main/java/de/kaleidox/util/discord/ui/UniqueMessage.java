@@ -7,6 +7,7 @@ import org.javacord.api.entity.message.Messageable;
 import org.javacord.api.listener.message.reaction.ReactionAddListener;
 import org.javacord.api.listener.message.reaction.ReactionRemoveListener;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -69,6 +70,15 @@ public class UniqueMessage {
                     )
             );
         }
+    }
+
+    public final static Optional<UniqueMessage> get(Messageable forParent) {
+        if (selfMap.containsKey(forParent)) {
+            UniqueMessage val = selfMap.get(forParent);
+            val.resend();
+
+            return Optional.of(val);
+        } else return Optional.empty();
     }
 
     public void refresh() {
