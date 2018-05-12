@@ -209,10 +209,16 @@ public enum Command {
             Response.areYouSure(stc, usr, "Are you sure?", "Do you really want to revoke the last Dango?", 30, TimeUnit.SECONDS)
                     .thenAcceptAsync(yesno -> {
                         if (yesno) {
-                            dangoProcessor.revokeDango();
+                            if (dangoProcessor.lastDango != null) {
+                                dangoProcessor.revokeDango();
 
-                            SuccessState.SUCCESSFUL
-                                    .evaluateForMessage(msg);
+                                SuccessState.SUCCESSFUL
+                                        .evaluateForMessage(msg);
+                            } else {
+                                SuccessState.ERRORED
+                                        .withMessage("There is no Dango to revoke.")
+                                        .evaluateForMessage(msg);
+                            }
                         }
                     });
         }

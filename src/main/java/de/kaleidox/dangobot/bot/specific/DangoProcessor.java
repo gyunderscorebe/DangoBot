@@ -43,7 +43,7 @@ public class DangoProcessor {
     private SelectedPropertiesMapper settings;
     private PropertiesMapper rankings;
     private Emoji emoji;
-    private LastDango lastDango;
+    public LastDango lastDango = null;
     private ServerPreferences preferences;
     private PagedMessage leaderboard = null;
 
@@ -184,6 +184,8 @@ public class DangoProcessor {
                 Message msg = lastDango.message;
 
                 removeDango(usr, stc, 1);
+
+                lastDango = null;
             }
         }
     }
