@@ -152,9 +152,9 @@ public class PagedMessage {
     }
 
     private void refreshPages() {
-        String completeMessage = head.get() + body.get();
         String completeHead = head.get();
         String completeBody = body.get();
+        String completeMessage = completeHead + completeBody;
         List<String> bodyLines = Arrays.asList(completeBody.split("\n"));
         StringBuilder pageBuilder;
 
