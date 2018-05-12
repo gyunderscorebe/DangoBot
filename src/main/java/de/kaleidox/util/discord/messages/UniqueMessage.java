@@ -1,4 +1,4 @@
-package de.kaleidox.util.discord.ui.messages;
+package de.kaleidox.util.discord.messages;
 
 import de.kaleidox.util.Emoji;
 import de.kaleidox.util.listeners.MessageListeners;

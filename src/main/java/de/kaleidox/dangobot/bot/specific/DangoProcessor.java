@@ -8,7 +8,7 @@ import de.kaleidox.util.Emoji;
 import de.kaleidox.util.ServerPreferences;
 import de.kaleidox.util.SuccessState;
 import de.kaleidox.util.Utils;
-import de.kaleidox.util.discord.ui.messages.PagedMessage;
+import de.kaleidox.util.discord.messages.PagedMessage;
 import de.kaleidox.util.serializer.PropertiesMapper;
 import de.kaleidox.util.serializer.SelectedPropertiesMapper;
 import org.javacord.api.entity.channel.ServerTextChannel;
