@@ -74,13 +74,14 @@ public final class DangoBot {
     }
 
     private static String readFile(String name) {
-        String give = "";
+        String give;
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(name));
 
             give = br.readLine();
         } catch (IOException e) {
+            return "0";
         }
 
         return give;
