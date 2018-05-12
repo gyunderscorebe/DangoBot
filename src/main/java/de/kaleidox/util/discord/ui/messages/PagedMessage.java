@@ -163,19 +163,15 @@ public class PagedMessage {
         if (completeMessage.length() < SUITABLE_MAX_LENGTH) {
             pages.add(completeMessage);
         } else {
-            pageBuilder = new StringBuilder();
+            pageBuilder = new StringBuilder(completeHead);
 
             for (int i = 0; i < bodyLines.size(); i++) {
-                if (i >= bodyLines.size() - 1) {
-                    pages.add(completeHead + pageBuilder.toString());
+                pageBuilder.append(bodyLines.get(i));
+                pageBuilder.append("\n");
 
-                    break;
-                } else if (pageBuilder.length() + completeHead.length() + bodyLines.get(i + 1).length() + "\n".length() < SUITABLE_MAX_LENGTH) {
-                    pageBuilder.append(bodyLines.get(i));
-                    pageBuilder.append("\n");
-                } else {
-                    pages.add(completeHead + pageBuilder.toString());
-                    pageBuilder = new StringBuilder();
+                if (i == bodyLines.size() - 1 || pageBuilder.length() + bodyLines.get(i + 1).length() >= SUITABLE_MAX_LENGTH) {
+                    pages.add(pageBuilder.toString());
+                    pageBuilder = new StringBuilder(completeHead);
                 }
             }
         }
