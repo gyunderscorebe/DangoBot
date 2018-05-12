@@ -2,11 +2,6 @@
 
 <br />
 <link href="https://fonts.googleapis.com/css?family=Montserrat|Poppins|Roboto" rel="stylesheet">
-<style>
-  .bot-name {
-  	font-family: Montserrat !important;
-  }
-</style>
 <br />
 
 The levelling concept of this bot is somewhat Luck-Based. It counts all messages it can see on a Server, and if a certain  number of messages is reached, the user that sent the last message gets a "levelup", and the counter is reset.
